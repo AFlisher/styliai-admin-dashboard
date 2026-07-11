@@ -292,18 +292,38 @@ export const StyleManagerPage: React.FC = () => {
     setShowStyleModal(true);
   };
 
-  const handleOpenDuplicateStyle = (style: StyleModel) => {
+  const handleOpenDuplicateStyle = async (style: StyleModel) => {
     setEditingStyle(null); // Save as new style
     setStyleName(`${style.name} (Copy)`);
     setStyleCategory(style.categoryId);
     setStylePrompt(style.prompt);
     setStyleNegativePrompt(style.negativePrompt || '');
     setStyleCreditCost(style.creditCost || 1);
-    setStyleCoverImage(style.coverImage);
     setStyleTrending(style.isTrending);
     setStylePremium(style.isPremium);
     setStyleEnabled(style.isEnabled);
     setActionError(null);
+
+    // Re-upload a fresh copy of the cover image rather than sharing the
+    // original's URL - otherwise, later replacing either style's cover
+    // image would delete the shared Storage object out from under the
+    // other one (ImageUploader cleans up the previous image on replace).
+    if (style.coverImage) {
+      try {
+        const ext = new URL(style.coverImage).pathname.split('.').pop() || 'jpg';
+        const sourceResponse = await fetch(style.coverImage);
+        const blob = await sourceResponse.blob();
+        const file = new File([blob], `cover-image.${ext}`, { type: blob.type || 'image/jpeg' });
+        const uploaded = await apiService.uploadImage(file);
+        setStyleCoverImage(uploaded.url);
+      } catch {
+        setStyleCoverImage('');
+        setActionError('Could not duplicate the cover image automatically - please choose one manually.');
+      }
+    } else {
+      setStyleCoverImage('');
+    }
+
     setShowStyleModal(true);
   };
 
