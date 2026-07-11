@@ -154,6 +154,13 @@ export const apiService = {
     });
   },
 
+  async deleteImage(url: string): Promise<void> {
+    return apiCall<void>('/api/upload', {
+      method: 'DELETE',
+      body: JSON.stringify({ url }),
+    });
+  },
+
   // Style generation preview
   async previewStyle(prompt: string, sampleImage: File): Promise<{ generatedImageUrl: string }> {
     const formData = new FormData();

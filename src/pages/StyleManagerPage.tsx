@@ -22,6 +22,7 @@ export const StyleManagerPage: React.FC = () => {
   // Search, Filter & Sort States
   const [searchQuery, setSearchQuery] = useState('');
   const [filterCategory, setFilterCategory] = useState('all'); // "all" or specific category ID
+  const [filterStatus, setFilterStatus] = useState<'all' | 'enabled' | 'disabled' | 'trending' | 'premium'>('all');
   const [sortBy, setSortBy] = useState<'sort_order' | 'name_asc' | 'name_desc' | 'credits_asc' | 'credits_desc'>('sort_order');
 
   // Action Statuses
@@ -450,6 +451,22 @@ export const StyleManagerPage: React.FC = () => {
       result = result.filter((s) => s.categoryId === filterCategory);
     }
 
+    // 2b. Status Filter
+    switch (filterStatus) {
+      case 'enabled':
+        result = result.filter((s) => s.isEnabled);
+        break;
+      case 'disabled':
+        result = result.filter((s) => !s.isEnabled);
+        break;
+      case 'trending':
+        result = result.filter((s) => s.isTrending);
+        break;
+      case 'premium':
+        result = result.filter((s) => s.isPremium);
+        break;
+    }
+
     // 3. Sort Order
     result.sort((a, b) => {
       switch (sortBy) {
@@ -469,7 +486,7 @@ export const StyleManagerPage: React.FC = () => {
     });
 
     return result;
-  }, [styles, selectedCategoryId, searchQuery, filterCategory, sortBy]);
+  }, [styles, selectedCategoryId, searchQuery, filterCategory, filterStatus, sortBy]);
 
   const activeCategoryObject = categories.find((c) => c.id === selectedCategoryId);
 
@@ -589,6 +606,20 @@ export const StyleManagerPage: React.FC = () => {
             </div>
 
             <div className="filter-dropdown">
+              <label>Status Filter</label>
+              <select
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value as any)}
+              >
+                <option value="all">All Styles</option>
+                <option value="enabled">Enabled Only</option>
+                <option value="disabled">Disabled Only</option>
+                <option value="trending">Trending Only</option>
+                <option value="premium">Premium Only</option>
+              </select>
+            </div>
+
+            <div className="filter-dropdown">
               <label>Sort By</label>
               <select
                 value={sortBy}
@@ -635,6 +666,7 @@ export const StyleManagerPage: React.FC = () => {
                       src={style.coverImage}
                       alt={style.name}
                       className="preset-img preset-img-clickable"
+                      loading="lazy"
                       onClick={() => setActivePreviewImage(style.coverImage)}
                     />
                   ) : (

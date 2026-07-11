@@ -36,12 +36,27 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
     setIsUploading(true);
     setError(null);
     try {
+      const previousValue = value;
       const response = await apiService.uploadImage(file);
       onChange(response.url);
+      if (previousValue) {
+        // Best-effort cleanup of the now-replaced image; a failed delete
+        // here just leaves a harmless orphaned object in storage, not a
+        // broken UI state, so it's not surfaced as an error to the user.
+        apiService.deleteImage(previousValue).catch(() => {});
+      }
     } catch (err: any) {
       setError(err.message || 'Failed to upload image.');
     } finally {
       setIsUploading(false);
+    }
+  };
+
+  const handleRemove = () => {
+    const previousValue = value;
+    onChange('');
+    if (previousValue) {
+      apiService.deleteImage(previousValue).catch(() => {});
     }
   };
 
@@ -56,7 +71,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
               <button
                 type="button"
                 className="uploader-remove-btn"
-                onClick={() => onChange('')}
+                onClick={handleRemove}
                 title="Remove image"
               >
                 <i className="fa-solid fa-trash-can"></i>
