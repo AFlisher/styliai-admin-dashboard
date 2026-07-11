@@ -1,7 +1,7 @@
 export interface UserModel {
   id: string;
   email: string;
-  role: string;
+  role: 'admin';
   name?: string;
 }
 
@@ -10,6 +10,8 @@ export interface CategoryModel {
   name: string;
   sortOrder: number;
   isEnabled: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface StyleModel {
@@ -17,13 +19,15 @@ export interface StyleModel {
   name: string;
   categoryId: string;
   prompt: string;
-  negativePrompt?: string;
+  negativePrompt?: string | null;
   creditCost: number;
   coverImage: string; // Storage URL
   isTrending: boolean;
   isPremium: boolean; // Corresponds to Pro
   isEnabled: boolean;
   sortOrder?: number;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface AdminStats {
