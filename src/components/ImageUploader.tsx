@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { apiService } from '../services/api';
 
+const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // matches the backend's adminImageUpload limit
+
 interface ImageUploaderProps {
   value: string;
   onChange: (url: string) => void;
@@ -23,6 +25,11 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
 
     if (!file.type.startsWith('image/')) {
       setError('Please upload an image file.');
+      return;
+    }
+
+    if (file.size > MAX_FILE_SIZE_BYTES) {
+      setError('File is too large. Maximum size is 10MB.');
       return;
     }
 
@@ -67,7 +74,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
               <label className="uploader-label">
                 <i className="fa-solid fa-cloud-arrow-up"></i>
                 <span className="upload-title">Choose image file</span>
-                <span className="upload-subtitle">JPG, PNG, GIF up to 5MB</span>
+                <span className="upload-subtitle">JPG, PNG, WEBP, GIF up to 10MB</span>
                 <input
                   type="file"
                   accept="image/*"
