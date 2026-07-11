@@ -40,7 +40,7 @@ export const StyleManagerPage: React.FC = () => {
   const [styleCategory, setStyleCategory] = useState('');
   const [stylePrompt, setStylePrompt] = useState('');
   const [styleNegativePrompt, setStyleNegativePrompt] = useState('');
-  const [styleCreditsCost, setStyleCreditsCost] = useState(0);
+  const [styleCreditCost, setStyleCreditCost] = useState(1);
   const [styleCoverImage, setStyleCoverImage] = useState('');
   const [styleTrending, setStyleTrending] = useState(false);
   const [stylePremium, setStylePremium] = useState(false);
@@ -267,7 +267,7 @@ export const StyleManagerPage: React.FC = () => {
     setStyleCategory(selectedCategoryId || categories[0]?.id || '');
     setStylePrompt('');
     setStyleNegativePrompt('');
-    setStyleCreditsCost(1);
+    setStyleCreditCost(1);
     setStyleCoverImage('');
     setStyleTrending(false);
     setStylePremium(false);
@@ -282,7 +282,7 @@ export const StyleManagerPage: React.FC = () => {
     setStyleCategory(style.categoryId);
     setStylePrompt(style.prompt);
     setStyleNegativePrompt(style.negativePrompt || '');
-    setStyleCreditsCost(style.creditsCost);
+    setStyleCreditCost(style.creditCost || 1);
     setStyleCoverImage(style.coverImage);
     setStyleTrending(style.isTrending);
     setStylePremium(style.isPremium);
@@ -297,7 +297,7 @@ export const StyleManagerPage: React.FC = () => {
     setStyleCategory(style.categoryId);
     setStylePrompt(style.prompt);
     setStyleNegativePrompt(style.negativePrompt || '');
-    setStyleCreditsCost(style.creditsCost);
+    setStyleCreditCost(style.creditCost || 1);
     setStyleCoverImage(style.coverImage);
     setStyleTrending(style.isTrending);
     setStylePremium(style.isPremium);
@@ -322,7 +322,7 @@ export const StyleManagerPage: React.FC = () => {
       categoryId: styleCategory,
       prompt: stylePrompt.trim(),
       negativePrompt: styleNegativePrompt.trim() || undefined,
-      creditsCost: styleCreditsCost,
+      creditCost: styleCreditCost,
       coverImage: styleCoverImage,
       isTrending: styleTrending,
       isPremium: stylePremium,
@@ -455,9 +455,9 @@ export const StyleManagerPage: React.FC = () => {
         case 'name_desc':
           return b.name.localeCompare(a.name);
         case 'credits_asc':
-          return a.creditsCost - b.creditsCost;
+          return a.creditCost - b.creditCost;
         case 'credits_desc':
-          return b.creditsCost - a.creditsCost;
+          return b.creditCost - a.creditCost;
         default:
           return 0;
       }
@@ -699,7 +699,7 @@ export const StyleManagerPage: React.FC = () => {
                   <div className="preset-header-row">
                     <h4 className="preset-name">{style.name}</h4>
                     <span className="credits-badge">
-                      <i className="fa-solid fa-coins"></i> {style.creditsCost} credits
+                      <i className="fa-solid fa-coins"></i> {style.creditCost} credits
                     </span>
                   </div>
 
@@ -808,17 +808,15 @@ export const StyleManagerPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="form-grid-2">
-            <div className="form-group">
-              <label>Credits Cost</label>
-              <input
-                type="number"
-                min="0"
-                max="50"
-                value={styleCreditsCost}
-                onChange={(e) => setStyleCreditsCost(Number(e.target.value))}
-              />
-            </div>
+          <div className="form-group">
+            <label>Credit Cost</label>
+            <input
+              type="number"
+              min="0"
+              max="50"
+              value={styleCreditCost}
+              onChange={(e) => setStyleCreditCost(Number(e.target.value))}
+            />
           </div>
 
           <ImageUploader

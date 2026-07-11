@@ -18,7 +18,7 @@ export interface StyleModel {
   categoryId: string;
   prompt: string;
   negativePrompt?: string;
-  creditsCost: number;
+  creditCost: number;
   coverImage: string; // Storage URL
   isTrending: boolean;
   isPremium: boolean; // Corresponds to Pro
