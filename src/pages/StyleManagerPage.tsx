@@ -331,8 +331,13 @@ export const StyleManagerPage: React.FC = () => {
 
     try {
       if (editingStyle) {
-        // Edit Style
-        const updated = await apiService.updateStyle(editingStyle.id, payload);
+        // Edit Style - preserve the existing sortOrder so saving an edit
+        // doesn't reset the style's drag-and-drop position (it's otherwise
+        // absent from payload, and the backend defaults it to 0).
+        const updated = await apiService.updateStyle(editingStyle.id, {
+          ...payload,
+          sortOrder: typeof editingStyle.sortOrder === 'number' ? editingStyle.sortOrder : 0,
+        });
         setStyles(styles.map((s) => (s.id === editingStyle.id ? updated : s)));
       } else {
         // Add / Duplicate
