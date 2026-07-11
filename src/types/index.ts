@@ -32,18 +32,17 @@ export interface StyleModel {
 
 export interface AdminStats {
   totalUsers: number;
-  activeUsersToday: number;
+  activeToday: number; // approximation: users with wallet activity today, not literal sessions
   imagesGenerated: number;
   creditsUsed: number;
-  storageUsed: string; // e.g. "124.5 GB"
+  storageUsedMB: number;
   chartData: Array<{ label: string; value: number }>;
-  recentPayments?: Array<{
+  recentActivity: Array<{
     id: string;
-    user: string;
-    plan: string;
-    amount: string;
+    userEmail: string;
+    type: string; // 'reward' | 'generation' | 'purchase' | 'refund' | 'admin'
+    amount: number;
     date: string;
-    status: string;
   }>;
 }
 

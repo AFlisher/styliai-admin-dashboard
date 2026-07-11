@@ -2,6 +2,19 @@ import React, { useEffect, useState } from 'react';
 import { apiService } from '../services/api';
 import { AdminStats } from '../types';
 
+function badgeClassForType(type: string): string {
+  switch (type) {
+    case 'generation':
+      return 'badge purple';
+    case 'reward':
+      return 'badge success';
+    case 'purchase':
+      return 'badge blue';
+    default:
+      return 'badge';
+  }
+}
+
 export const AnalyticsPage: React.FC = () => {
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -87,8 +100,8 @@ export const AnalyticsPage: React.FC = () => {
             <span className="stat-title">Active Today</span>
             <div className="stat-icon green"><i className="fa-solid fa-user-check"></i></div>
           </div>
-          <span className="stat-value">{stats.activeUsersToday.toLocaleString()}</span>
-          <span className="stat-trend neutral">Active sessions in last 24h</span>
+          <span className="stat-value">{stats.activeToday.toLocaleString()}</span>
+          <span className="stat-trend neutral">Users with wallet activity today</span>
         </div>
 
         <div className="stat-card">
@@ -114,8 +127,8 @@ export const AnalyticsPage: React.FC = () => {
             <span className="stat-title">Storage Used</span>
             <div className="stat-icon pink"><i className="fa-solid fa-database"></i></div>
           </div>
-          <span className="stat-value">{stats.storageUsed}</span>
-          <span className="stat-trend neutral">S3 / Cloud files size</span>
+          <span className="stat-value">{stats.storageUsedMB.toLocaleString()} MB</span>
+          <span className="stat-trend neutral">Style cover images bucket</span>
         </div>
       </div>
 
@@ -142,29 +155,31 @@ export const AnalyticsPage: React.FC = () => {
         </div>
 
         <div className="panel">
-          <h3 className="panel-title">Recent System Transactions</h3>
-          {!stats.recentPayments || stats.recentPayments.length === 0 ? (
-            <div className="table-empty">No transaction history.</div>
+          <h3 className="panel-title">Recent Wallet Activity</h3>
+          {!stats.recentActivity || stats.recentActivity.length === 0 ? (
+            <div className="table-empty">No wallet activity yet.</div>
           ) : (
             <div className="table-container">
               <table>
                 <thead>
                   <tr>
                     <th>User</th>
-                    <th>Detail</th>
-                    <th>Status</th>
+                    <th>Type</th>
+                    <th>Amount</th>
+                    <th>Date</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {stats.recentPayments.map((p) => (
-                    <tr key={p.id}>
-                      <td>{p.user}</td>
+                  {stats.recentActivity.map((a) => (
+                    <tr key={a.id}>
+                      <td>{a.userEmail}</td>
                       <td>
-                        <span className={`badge ${p.plan.includes('Yearly') || p.plan.includes('100') ? 'purple' : 'blue'}`}>
-                          {p.plan}
-                        </span>
+                        <span className={badgeClassForType(a.type)}>{a.type}</span>
                       </td>
-                      <td style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{p.date}</td>
+                      <td>{a.amount > 0 ? `+${a.amount}` : a.amount}</td>
+                      <td style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                        {new Date(a.date).toLocaleString()}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
