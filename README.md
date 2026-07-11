@@ -1,19 +1,8 @@
-# Prombt — Admin Dashboard & Analytics Console
+# StyliAI — Admin Dashboard
 
-This directory contains the dynamic styling console and user analytics console for the **Prombt** mobile application, built with **React** and **TypeScript** (Vite).
+Internal admin console for managing the StyliAI mobile app's style catalog and viewing platform analytics. Built with **React 18 + TypeScript**, bundled with **Vite**.
 
-## 🚀 How to Run Right Now (Zero Setup)
-
-If you don't have Node.js/NPM installed on this machine, you can launch the dashboard immediately without any setup:
-1. Double-click the **`index.html`** file located directly in `admin_dashboard/index.html`.
-2. This is a fully functional standalone build using React from CDN, meaning it runs directly in your browser with zero installations.
-3. You can manage presets, see user analytics graphs, and generate JSON configurations right away.
-
----
-
-## 🛠️ Production Vite Project Setup (React + TypeScript)
-
-To run this as a standard Node project or deploy it to a hosting service (like Vercel, Netlify, or your own server):
+## Setup
 
 ### 1. Install Node.js
 If you don't have Node installed, download it from [nodejs.org](https://nodejs.org/).
@@ -24,30 +13,37 @@ Open your terminal in this directory (`admin_dashboard`) and run:
 npm install
 ```
 
-### 3. Run Development Server
-Start the local server with hot-reloading:
+### 3. Configure the environment
+Create a `.env` file in this directory with:
+```
+VITE_API_BASE_URL=<your backend's base URL>
+```
+
+### 4. Run the Development Server
 ```bash
 npm run dev
 ```
 Open the provided local URL (typically `http://localhost:5173`) in your browser.
 
-### 4. Build for Production
-To bundle the project for deployment:
+### 5. Build for Production
 ```bash
 npm run build
 ```
-This generates a highly optimized production bundle inside the `dist/` directory, which can be uploaded to any static web host.
+Generates a production bundle in `dist/`, deployable to any static host.
 
 ---
 
-## 📊 Console Features
+## Features
 
-1. **Analytics Dashboard Tab**:
-   - **Total Installs**: Count of users who installed the app.
-   - **Active Users Today**: Real-time active users.
-   - **Images Generated**: Visual bar chart tracking image generations.
-   - **Subscription Revenue**: Details of premium paid subscriptions (Plan, Date, Amount).
-2. **Styles Manager Tab**:
-   - **Categories CRUD**: Create, select, or delete visual layout categories.
-   - **Presets CRUD**: Add new style presets, input system prompts, upload preview images, and delete or mark items as "Trending".
-   - **App Config Generator**: Copy the dynamically updated JSON configuration from the box at the bottom of the page and paste it straight into your app's configuration.
+### Analytics Tab
+Displays platform stats (total users, active users today, images generated, credits used, storage used), a daily-generation chart, and a recent-transactions table.
+
+> **Note:** this tab currently calls a backend endpoint that isn't wired up yet, so it will show an error until that work lands.
+
+### Style Manager Tab
+- **Categories** — create, edit, delete, and drag-and-drop reorder.
+- **Style presets** — create, edit, delete, and drag-and-drop reorder within a category; configure name, AI prompt, negative prompt, credit cost, cover image, and Trending / Premium / Enabled flags.
+- **Search, filter, and sort** the catalog by name/prompt text, category, status (enabled / disabled / trending / premium), and credit cost.
+- **Prompt Preview** — intended to test a style's prompt against a sample photo before saving.
+
+  > **Note:** this feature also calls a backend endpoint that isn't wired up yet.
