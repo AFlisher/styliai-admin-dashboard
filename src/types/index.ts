@@ -45,6 +45,5 @@ export interface AdminStats {
 
 export interface AuthResponse {
   accessToken: string;
-  refreshToken: string;
   user: UserModel;
 }

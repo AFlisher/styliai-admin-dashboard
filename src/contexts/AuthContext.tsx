@@ -33,12 +33,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setError(null);
     try {
       const response = await apiService.login(email, password);
-      
-      if (response.user.role !== 'admin') {
-        setError('Access Denied: Only administrators can access this dashboard.');
-        setIsLoading(false);
-        return;
-      }
 
       localStorage.setItem('styli_access_token', response.accessToken);
       localStorage.setItem('styli_admin_user', JSON.stringify(response.user));

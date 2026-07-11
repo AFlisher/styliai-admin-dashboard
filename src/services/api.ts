@@ -8,13 +8,22 @@ export function setupAuthInterceptor(onLogout: () => void) {
   onAuthFailureCallback = onLogout;
 }
 
+interface ApiCallOptions extends RequestInit {
+  // Set for calls that can legitimately 401 without meaning "your session
+  // expired" (currently just the login call itself) - skips the global
+  // logout interceptor so a failed login doesn't misreport itself as a
+  // session-expiry event.
+  skipAuthRedirect?: boolean;
+}
+
 // Fetch helper wrapper
 async function apiCall<T>(
   endpoint: string,
-  options: RequestInit = {}
+  options: ApiCallOptions = {}
 ): Promise<T> {
+  const { skipAuthRedirect, ...fetchOptions } = options;
   const token = localStorage.getItem('styli_access_token');
-  const headers = new Headers(options.headers || {});
+  const headers = new Headers(fetchOptions.headers || {});
 
   if (token) {
     headers.set('Authorization', `Bearer ${token}`);
@@ -22,22 +31,23 @@ async function apiCall<T>(
 
   // Determine if we should set Content-Type JSON
   // If body is FormData (for file uploads), do not set Content-Type (browser will set it automatically with boundary)
-  if (!(options.body instanceof FormData) && !headers.has('Content-Type')) {
+  if (!(fetchOptions.body instanceof FormData) && !headers.has('Content-Type')) {
     headers.set('Content-Type', 'application/json');
   }
 
   const config: RequestInit = {
-    ...options,
+    ...fetchOptions,
     headers,
   };
 
   const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
 
   if (response.status === 401) {
-    if (onAuthFailureCallback) {
+    const errorData = await response.json().catch(() => ({}));
+    if (!skipAuthRedirect && onAuthFailureCallback) {
       onAuthFailureCallback();
     }
-    throw new Error('Unauthorized. Logging out...');
+    throw new Error(errorData.message || 'Unauthorized.');
   }
 
   if (!response.ok) {
@@ -59,6 +69,7 @@ export const apiService = {
     return apiCall<AuthResponse>('/api/admin/login', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
+      skipAuthRedirect: true,
     });
   },
 
