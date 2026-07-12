@@ -4,11 +4,12 @@ import LoginPage from './pages/LoginPage';
 import AnalyticsPage from './pages/AnalyticsPage';
 import StyleManagerPage from './pages/StyleManagerPage';
 import UserCreditsPage from './pages/UserCreditsPage';
+import CreditPacksPage from './pages/CreditPacksPage';
 import { Loader } from './components/Loader';
 
 const AppContent: React.FC = () => {
   const { user, isLoading, logout } = useAuth();
-  const [activeTab, setActiveTab] = useState<'analytics' | 'manager' | 'credits'>('analytics');
+  const [activeTab, setActiveTab] = useState<'analytics' | 'manager' | 'credits' | 'packs'>('analytics');
 
   if (isLoading) {
     return <Loader type="page" />;
@@ -52,6 +53,12 @@ const AppContent: React.FC = () => {
             >
               <i className="fa-solid fa-coins"></i> Credits
             </button>
+            <button
+              className={`tab-btn ${activeTab === 'packs' ? 'active' : ''}`}
+              onClick={() => setActiveTab('packs')}
+            >
+              <i className="fa-solid fa-box-open"></i> Credit Packs
+            </button>
           </div>
 
           <div className="user-profile-signout">
@@ -69,6 +76,7 @@ const AppContent: React.FC = () => {
         {activeTab === 'analytics' && <AnalyticsPage />}
         {activeTab === 'manager' && <StyleManagerPage />}
         {activeTab === 'credits' && <UserCreditsPage />}
+        {activeTab === 'packs' && <CreditPacksPage />}
       </main>
 
       <footer className="admin-footer">

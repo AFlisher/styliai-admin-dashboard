@@ -1,4 +1,4 @@
-import { CategoryModel, StyleModel, StyleCreateInput, AdminStats, AuthResponse, AdminUserSearchResult } from '../types';
+import { CategoryModel, StyleModel, StyleCreateInput, AdminStats, AuthResponse, AdminUserSearchResult, CreditPack, CreditPackInput } from '../types';
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
 
@@ -181,6 +181,31 @@ export const apiService = {
     return apiCall<{ balance: number }>(`/api/admin/users/${userId}/adjust-balance`, {
       method: 'POST',
       body: JSON.stringify({ amount, description }),
+    });
+  },
+
+  // Credit pack catalog
+  async getCreditPacks(): Promise<CreditPack[]> {
+    return apiCall<CreditPack[]>('/api/credit-packs?all=true');
+  },
+
+  async addCreditPack(pack: CreditPackInput): Promise<CreditPack> {
+    return apiCall<CreditPack>('/api/credit-packs', {
+      method: 'POST',
+      body: JSON.stringify(pack),
+    });
+  },
+
+  async updateCreditPack(id: string, updates: Partial<CreditPackInput>): Promise<CreditPack> {
+    return apiCall<CreditPack>(`/api/credit-packs/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(updates),
+    });
+  },
+
+  async deleteCreditPack(id: string): Promise<void> {
+    return apiCall<void>(`/api/credit-packs/${id}`, {
+      method: 'DELETE',
     });
   },
 };

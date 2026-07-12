@@ -9,6 +9,7 @@ export type StyleModel = components['schemas']['Style'];
 export type AdminStats = components['schemas']['AdminStats'];
 export type AuthResponse = components['schemas']['AdminAuthResponse'];
 export type AdminUserSearchResult = components['schemas']['AdminUserSearchResult'];
+export type CreditPack = components['schemas']['CreditPack'];
 
 // The POST /api/styles request body is intentionally its own shape (e.g.
 // sortOrder is optional there, unlike on the StyleModel the API returns) -
@@ -16,3 +17,6 @@ export type AdminUserSearchResult = components['schemas']['AdminUserSearchResult
 // requires on read.
 export type StyleCreateInput =
   paths['/api/styles']['post']['requestBody']['content']['application/json'];
+
+export type CreditPackInput =
+  paths['/api/credit-packs']['post']['requestBody']['content']['application/json'];
