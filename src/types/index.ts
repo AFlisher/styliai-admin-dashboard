@@ -1,52 +1,17 @@
-export interface UserModel {
-  id: string;
-  email: string;
-  role: 'admin';
-  name?: string;
-}
+import type { components, paths } from './api-generated';
 
-export interface CategoryModel {
-  id: string;
-  name: string;
-  sortOrder: number;
-  isEnabled: boolean;
-  createdAt?: string;
-  updatedAt?: string;
-}
+// Re-exported from the generated OpenAPI types (../../backend/openapi.yaml is
+// the source of truth - see `npm run generate:api-types`) so these can't
+// silently drift from what the backend actually returns.
+export type UserModel = components['schemas']['AdminUser'];
+export type CategoryModel = components['schemas']['Category'];
+export type StyleModel = components['schemas']['Style'];
+export type AdminStats = components['schemas']['AdminStats'];
+export type AuthResponse = components['schemas']['AdminAuthResponse'];
 
-export interface StyleModel {
-  id: string;
-  name: string;
-  categoryId: string;
-  prompt: string;
-  negativePrompt?: string | null;
-  creditCost: number;
-  coverImage: string; // Storage URL
-  isTrending: boolean;
-  isPremium: boolean; // Corresponds to Pro
-  isEnabled: boolean;
-  sortOrder?: number;
-  createdAt?: string;
-  updatedAt?: string;
-}
-
-export interface AdminStats {
-  totalUsers: number;
-  activeToday: number; // approximation: users with wallet activity today, not literal sessions
-  imagesGenerated: number;
-  creditsUsed: number;
-  storageUsedMB: number;
-  chartData: Array<{ label: string; value: number }>;
-  recentActivity: Array<{
-    id: string;
-    userEmail: string;
-    type: string; // 'reward' | 'generation' | 'purchase' | 'refund' | 'admin'
-    amount: number;
-    date: string;
-  }>;
-}
-
-export interface AuthResponse {
-  accessToken: string;
-  user: UserModel;
-}
+// The POST /api/styles request body is intentionally its own shape (e.g.
+// sortOrder is optional there, unlike on the StyleModel the API returns) -
+// reusing StyleModel for the request would relax fields the backend actually
+// requires on read.
+export type StyleCreateInput =
+  paths['/api/styles']['post']['requestBody']['content']['application/json'];

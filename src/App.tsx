@@ -49,7 +49,7 @@ const AppContent: React.FC = () => {
 
           <div className="user-profile-signout">
             <span className="user-name-tag">
-              <i className="fa-solid fa-user-shield"></i> {user.name || 'Admin'}
+              <i className="fa-solid fa-user-shield"></i> {user.fullName || 'Admin'}
             </span>
             <button className="btn secondary signout-btn" onClick={logout} title="Sign Out">
               <i className="fa-solid fa-arrow-right-from-bracket"></i> Sign Out

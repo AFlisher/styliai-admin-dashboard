@@ -284,7 +284,7 @@ export const StyleManagerPage: React.FC = () => {
     setStylePrompt(style.prompt);
     setStyleNegativePrompt(style.negativePrompt || '');
     setStyleCreditCost(style.creditCost || 1);
-    setStyleCoverImage(style.coverImage);
+    setStyleCoverImage(style.coverImage || '');
     setStyleTrending(style.isTrending);
     setStylePremium(style.isPremium);
     setStyleEnabled(style.isEnabled);

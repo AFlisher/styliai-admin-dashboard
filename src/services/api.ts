@@ -1,4 +1,4 @@
-import { CategoryModel, StyleModel, AdminStats, AuthResponse } from '../types';
+import { CategoryModel, StyleModel, StyleCreateInput, AdminStats, AuthResponse } from '../types';
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
 
@@ -117,7 +117,7 @@ export const apiService = {
     return apiCall<StyleModel[]>('/api/styles?all=true');
   },
 
-  async addStyle(style: Omit<StyleModel, 'id'>): Promise<StyleModel> {
+  async addStyle(style: StyleCreateInput): Promise<StyleModel> {
     return apiCall<StyleModel>('/api/styles', {
       method: 'POST',
       body: JSON.stringify(style),
