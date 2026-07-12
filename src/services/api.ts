@@ -1,4 +1,4 @@
-import { CategoryModel, StyleModel, StyleCreateInput, AdminStats, AuthResponse } from '../types';
+import { CategoryModel, StyleModel, StyleCreateInput, AdminStats, AuthResponse, AdminUserSearchResult } from '../types';
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
 
@@ -169,6 +169,18 @@ export const apiService = {
     return apiCall<{ generatedImageUrl: string }>('/api/styles/preview', {
       method: 'POST',
       body: formData,
+    });
+  },
+
+  // Manual credit adjustment
+  async searchUserByEmail(email: string): Promise<AdminUserSearchResult> {
+    return apiCall<AdminUserSearchResult>(`/api/admin/users/search?email=${encodeURIComponent(email)}`);
+  },
+
+  async adjustUserBalance(userId: string, amount: number, description: string): Promise<{ balance: number }> {
+    return apiCall<{ balance: number }>(`/api/admin/users/${userId}/adjust-balance`, {
+      method: 'POST',
+      body: JSON.stringify({ amount, description }),
     });
   },
 };

@@ -640,6 +640,129 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/users/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Look up a single user by email (Roadmap Item 3.4 - manual credit adjustment tool). */
+        get: {
+            parameters: {
+                query: {
+                    email: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description User found */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AdminUserSearchResult"];
+                    };
+                };
+                /** @description Missing email param */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorMessage"];
+                    };
+                };
+                /** @description No user with this email */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorMessage"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/users/{id}/adjust-balance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Manually adds (positive amount) or deducts (negative amount) credits for a user, recorded as a type="admin" ledger entry (Roadmap Item 3.4). Deducting more than the user's balance fails with 400 rather than going negative. */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @description Non-zero; positive adds, negative deducts. */
+                        amount: number;
+                        /** @description Reason for the adjustment, required. */
+                        description: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Adjusted */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            balance: number;
+                        };
+                    };
+                };
+                /** @description Validation error or insufficient balance for a deduction */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorMessage"];
+                    };
+                };
+                /** @description User not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorMessage"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/categories": {
         parameters: {
             query?: never;
@@ -1584,6 +1707,14 @@ export interface components {
             success: boolean;
             /** Format: uri */
             generatedImageUrl: string;
+        };
+        AdminUserSearchResult: {
+            /** Format: uuid */
+            id: string;
+            /** Format: email */
+            email: string;
+            fullName: string | null;
+            balance: number;
         };
     };
     responses: never;

@@ -8,6 +8,7 @@ export type CategoryModel = components['schemas']['Category'];
 export type StyleModel = components['schemas']['Style'];
 export type AdminStats = components['schemas']['AdminStats'];
 export type AuthResponse = components['schemas']['AdminAuthResponse'];
+export type AdminUserSearchResult = components['schemas']['AdminUserSearchResult'];
 
 // The POST /api/styles request body is intentionally its own shape (e.g.
 // sortOrder is optional there, unlike on the StyleModel the API returns) -

@@ -3,11 +3,12 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import LoginPage from './pages/LoginPage';
 import AnalyticsPage from './pages/AnalyticsPage';
 import StyleManagerPage from './pages/StyleManagerPage';
+import UserCreditsPage from './pages/UserCreditsPage';
 import { Loader } from './components/Loader';
 
 const AppContent: React.FC = () => {
   const { user, isLoading, logout } = useAuth();
-  const [activeTab, setActiveTab] = useState<'analytics' | 'manager'>('analytics');
+  const [activeTab, setActiveTab] = useState<'analytics' | 'manager' | 'credits'>('analytics');
 
   if (isLoading) {
     return <Loader type="page" />;
@@ -45,6 +46,12 @@ const AppContent: React.FC = () => {
             >
               <i className="fa-solid fa-sliders"></i> Style Manager
             </button>
+            <button
+              className={`tab-btn ${activeTab === 'credits' ? 'active' : ''}`}
+              onClick={() => setActiveTab('credits')}
+            >
+              <i className="fa-solid fa-coins"></i> Credits
+            </button>
           </div>
 
           <div className="user-profile-signout">
@@ -59,7 +66,9 @@ const AppContent: React.FC = () => {
       </header>
 
       <main className="main-content-layout">
-        {activeTab === 'analytics' ? <AnalyticsPage /> : <StyleManagerPage />}
+        {activeTab === 'analytics' && <AnalyticsPage />}
+        {activeTab === 'manager' && <StyleManagerPage />}
+        {activeTab === 'credits' && <UserCreditsPage />}
       </main>
 
       <footer className="admin-footer">
