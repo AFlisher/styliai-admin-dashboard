@@ -28,6 +28,9 @@ export const StyleManagerPage: React.FC = () => {
   // Action Statuses
   const [actionError, setActionError] = useState<string | null>(null);
 
+  // Shared confirmation dialog (replaces native confirm())
+  const [confirmDialog, setConfirmDialog] = useState<{ message: string; onConfirm: () => void } | null>(null);
+
   // Category Modals & Fields
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [editingCategory, setEditingCategory] = useState<CategoryModel | null>(null);
@@ -128,6 +131,8 @@ export const StyleManagerPage: React.FC = () => {
     const draggedIdx = categories.findIndex((c) => c.id === draggedId);
     if (draggedIdx === -1) return;
 
+    // Optimistic UI update
+    const previousCategories = [...categories];
     const updatedCategories = [...categories];
     const [removed] = updatedCategories.splice(draggedIdx, 1);
     updatedCategories.splice(targetIndex, 0, removed);
@@ -141,15 +146,16 @@ export const StyleManagerPage: React.FC = () => {
 
     // Save order changes in background for each affected category
     try {
-  await apiService.reorderCategories(
-    finalCategories.map((category) => ({
-      id: category.id,
-      sortOrder: category.sortOrder,
-    }))
-  );
-} catch (err) {
-  setActionError("Failed to persist category order. Try refreshing.");
-}
+      await apiService.reorderCategories(
+        finalCategories.map((category) => ({
+          id: category.id,
+          sortOrder: category.sortOrder,
+        }))
+      );
+    } catch (err) {
+      setCategories(previousCategories);
+      setActionError("Failed to persist category order. Reverting to previous order.");
+    }
   };
 
   // HTML5 Drag & Drop Style Reordering
@@ -247,18 +253,23 @@ export const StyleManagerPage: React.FC = () => {
     }
   };
 
-  const handleDeleteCategory = async (id: string) => {
-    if (!confirm('Are you sure you want to archive/delete this category? Styles under this category will remain, but you should re-assign them.')) return;
-    setActionError(null);
-    try {
-      await apiService.deleteCategory(id);
-      setCategories(categories.filter((c) => c.id !== id));
-      if (selectedCategoryId === id) {
-        setSelectedCategoryId(categories.find((c) => c.id !== id)?.id || '');
-      }
-    } catch (err: any) {
-      setActionError(err.message || 'Error deleting category.');
-    }
+  const handleDeleteCategory = (id: string) => {
+    setConfirmDialog({
+      message: 'Are you sure you want to archive/delete this category? Styles under this category will remain, but you should re-assign them.',
+      onConfirm: async () => {
+        setConfirmDialog(null);
+        setActionError(null);
+        try {
+          await apiService.deleteCategory(id);
+          setCategories(categories.filter((c) => c.id !== id));
+          if (selectedCategoryId === id) {
+            setSelectedCategoryId(categories.find((c) => c.id !== id)?.id || '');
+          }
+        } catch (err: any) {
+          setActionError(err.message || 'Error deleting category.');
+        }
+      },
+    });
   };
 
   // --- Style Actions ---
@@ -371,15 +382,20 @@ export const StyleManagerPage: React.FC = () => {
     }
   };
 
-  const handleDeleteStyle = async (id: string) => {
-    if (!confirm('Are you sure you want to archive/delete this style?')) return;
-    setActionError(null);
-    try {
-      await apiService.deleteStyle(id);
-      setStyles(styles.filter((s) => s.id !== id));
-    } catch (err: any) {
-      setActionError(err.message || 'Error deleting style preset.');
-    }
+  const handleDeleteStyle = (id: string) => {
+    setConfirmDialog({
+      message: 'Are you sure you want to archive/delete this style?',
+      onConfirm: async () => {
+        setConfirmDialog(null);
+        setActionError(null);
+        try {
+          await apiService.deleteStyle(id);
+          setStyles(styles.filter((s) => s.id !== id));
+        } catch (err: any) {
+          setActionError(err.message || 'Error deleting style preset.');
+        }
+      },
+    });
   };
 
   const handleToggleStyleEnabled = async (style: StyleModel) => {
@@ -387,7 +403,7 @@ export const StyleManagerPage: React.FC = () => {
       const updated = await apiService.updateStyle(style.id, { isEnabled: !style.isEnabled });
       setStyles(styles.map((s) => (s.id === style.id ? updated : s)));
     } catch (err: any) {
-      alert(`Failed to update status: ${err.message}`);
+      setActionError(err.message || 'Failed to update status.');
     }
   };
 
@@ -396,7 +412,7 @@ export const StyleManagerPage: React.FC = () => {
       const updated = await apiService.updateStyle(style.id, { isTrending: !style.isTrending });
       setStyles(styles.map((s) => (s.id === style.id ? updated : s)));
     } catch (err: any) {
-      alert(`Failed to update status: ${err.message}`);
+      setActionError(err.message || 'Failed to update status.');
     }
   };
 
@@ -405,7 +421,7 @@ export const StyleManagerPage: React.FC = () => {
       const updated = await apiService.updateStyle(style.id, { isPremium: !style.isPremium });
       setStyles(styles.map((s) => (s.id === style.id ? updated : s)));
     } catch (err: any) {
-      alert(`Failed to update status: ${err.message}`);
+      setActionError(err.message || 'Failed to update status.');
     }
   };
 
@@ -1036,6 +1052,26 @@ export const StyleManagerPage: React.FC = () => {
               onClick={handleGeneratePreview}
             >
               {isPreviewGenerating ? 'Generating...' : 'Run Generation Test'}
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* --- Shared Confirmation Modal (replaces native confirm()) --- */}
+      <Modal
+        title="Please Confirm"
+        isOpen={!!confirmDialog}
+        onClose={() => setConfirmDialog(null)}
+        size="small"
+      >
+        <div className="form-layout">
+          <p>{confirmDialog?.message}</p>
+          <div className="modal-actions">
+            <button className="btn secondary" onClick={() => setConfirmDialog(null)}>
+              Cancel
+            </button>
+            <button className="btn" onClick={() => confirmDialog?.onConfirm()}>
+              Confirm
             </button>
           </div>
         </div>
