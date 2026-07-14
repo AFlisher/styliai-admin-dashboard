@@ -1,14 +1,16 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { apiService } from '../services/api';
-import { CategoryModel, StyleModel } from '../types';
+import { CategoryModel, StyleModel, TagModel } from '../types';
 import { Loader } from '../components/Loader';
 import { Modal } from '../components/Modal';
 import { ImageUploader } from '../components/ImageUploader';
+import { TagInput } from '../components/TagInput';
 
 export const StyleManagerPage: React.FC = () => {
   // Main Lists State
   const [categories, setCategories] = useState<CategoryModel[]>([]);
   const [styles, setStyles] = useState<StyleModel[]>([]);
+  const [tags, setTags] = useState<TagModel[]>([]);
 
   // Loading & Error States
   const [isCategoriesLoading, setIsCategoriesLoading] = useState(true);
@@ -49,6 +51,15 @@ export const StyleManagerPage: React.FC = () => {
   const [styleTrending, setStyleTrending] = useState(false);
   const [stylePremium, setStylePremium] = useState(false);
   const [styleEnabled, setStyleEnabled] = useState(true);
+  const [styleTagIds, setStyleTagIds] = useState<string[]>([]);
+
+  // Tag Manager Modal & Fields
+  const [showTagManagerModal, setShowTagManagerModal] = useState(false);
+  const [newTagName, setNewTagName] = useState('');
+  const [tagManagerError, setTagManagerError] = useState<string | null>(null);
+  const [editingTagId, setEditingTagId] = useState<string | null>(null);
+  const [editingTagName, setEditingTagName] = useState('');
+  const [editingTagEnabled, setEditingTagEnabled] = useState(true);
 
   // Preview Prompt Modal & Fields
   const [showPreviewModal, setShowPreviewModal] = useState(false);
@@ -108,9 +119,21 @@ export const StyleManagerPage: React.FC = () => {
     }
   };
 
+  const fetchTags = async () => {
+    try {
+      const data = await apiService.getTags();
+      setTags(data);
+    } catch (err: any) {
+      // Non-fatal: tags only affect the (optional) tagging UI, not the
+      // core style catalog, so a failure here shouldn't block the page.
+      console.error('Failed to load tags.', err);
+    }
+  };
+
   useEffect(() => {
     fetchCategories();
     fetchStyles();
+    fetchTags();
   }, []);
 
   // HTML5 Drag & Drop Category Reordering
@@ -284,6 +307,7 @@ export const StyleManagerPage: React.FC = () => {
     setStyleTrending(false);
     setStylePremium(false);
     setStyleEnabled(true);
+    setStyleTagIds([]);
     setActionError(null);
     setShowStyleModal(true);
   };
@@ -299,6 +323,7 @@ export const StyleManagerPage: React.FC = () => {
     setStyleTrending(style.isTrending);
     setStylePremium(style.isPremium);
     setStyleEnabled(style.isEnabled);
+    setStyleTagIds(style.tagIds || []);
     setActionError(null);
     setShowStyleModal(true);
   };
@@ -313,6 +338,7 @@ export const StyleManagerPage: React.FC = () => {
     setStyleTrending(style.isTrending);
     setStylePremium(style.isPremium);
     setStyleEnabled(style.isEnabled);
+    setStyleTagIds(style.tagIds || []);
     setActionError(null);
 
     // Re-upload a fresh copy of the cover image rather than sharing the
@@ -359,6 +385,7 @@ export const StyleManagerPage: React.FC = () => {
       isTrending: styleTrending,
       isPremium: stylePremium,
       isEnabled: styleEnabled,
+      tagIds: styleTagIds,
     };
 
     try {
@@ -423,6 +450,70 @@ export const StyleManagerPage: React.FC = () => {
     } catch (err: any) {
       setActionError(err.message || 'Failed to update status.');
     }
+  };
+
+  // --- Tag Manager Actions ---
+  const handleOpenTagManager = () => {
+    setNewTagName('');
+    setTagManagerError(null);
+    setEditingTagId(null);
+    setShowTagManagerModal(true);
+  };
+
+  const handleAddTag = async () => {
+    setTagManagerError(null);
+    if (!newTagName.trim()) {
+      setTagManagerError('Tag name is required.');
+      return;
+    }
+    try {
+      const created = await apiService.addTag({ name: newTagName.trim(), isEnabled: true });
+      setTags([...tags, created]);
+      setNewTagName('');
+    } catch (err: any) {
+      setTagManagerError(err.message || 'Error creating tag.');
+    }
+  };
+
+  const handleStartEditTag = (tag: TagModel) => {
+    setEditingTagId(tag.id);
+    setEditingTagName(tag.name);
+    setEditingTagEnabled(tag.isEnabled);
+    setTagManagerError(null);
+  };
+
+  const handleSaveEditTag = async () => {
+    if (!editingTagId) return;
+    setTagManagerError(null);
+    if (!editingTagName.trim()) {
+      setTagManagerError('Tag name is required.');
+      return;
+    }
+    try {
+      const updated = await apiService.updateTag(editingTagId, {
+        name: editingTagName.trim(),
+        isEnabled: editingTagEnabled,
+      });
+      setTags(tags.map((t) => (t.id === editingTagId ? updated : t)));
+      setEditingTagId(null);
+    } catch (err: any) {
+      setTagManagerError(err.message || 'Error updating tag.');
+    }
+  };
+
+  const handleDeleteTag = (id: string) => {
+    setConfirmDialog({
+      message: 'Delete this tag? It will be removed from every style it is currently assigned to.',
+      onConfirm: async () => {
+        setConfirmDialog(null);
+        try {
+          await apiService.deleteTag(id);
+          setTags(tags.filter((t) => t.id !== id));
+        } catch (err: any) {
+          setTagManagerError(err.message || 'Error deleting tag.');
+        }
+      },
+    });
   };
 
   // --- Style Prompt Preview Trigger ---
@@ -607,9 +698,14 @@ export const StyleManagerPage: React.FC = () => {
               )}
             </h2>
           </div>
-          <button className="btn" onClick={handleOpenAddStyle}>
-            <i className="fa-solid fa-plus"></i> Add Style Preset
-          </button>
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <button className="btn secondary" onClick={handleOpenTagManager}>
+              <i className="fa-solid fa-tags"></i> Manage Tags
+            </button>
+            <button className="btn" onClick={handleOpenAddStyle}>
+              <i className="fa-solid fa-plus"></i> Add Style Preset
+            </button>
+          </div>
         </div>
 
         {/* Search, Filtering, and Sorting Header */}
@@ -847,6 +943,87 @@ export const StyleManagerPage: React.FC = () => {
         </div>
       </Modal>
 
+      {/* --- Tag Manager Modal --- */}
+      <Modal
+        title="Manage Tags"
+        isOpen={showTagManagerModal}
+        onClose={() => setShowTagManagerModal(false)}
+        size="small"
+      >
+        <div className="form-layout">
+          <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
+            Tags are internal metadata used to rank "Recommended For You" and
+            "You may also like" - they are never shown inside the mobile app.
+          </p>
+
+          <div className="form-group form-row">
+            <input
+              type="text"
+              placeholder="e.g. Minimalist, Y2K, Cyberpunk"
+              value={newTagName}
+              onChange={(e) => setNewTagName(e.target.value)}
+            />
+            <button className="btn btn-small" onClick={handleAddTag}>
+              Add
+            </button>
+          </div>
+
+          <div className="tag-manager-list">
+            {tags.length === 0 ? (
+              <div className="empty-state-sidebar">No tags yet.</div>
+            ) : (
+              tags.map((tag) =>
+                editingTagId === tag.id ? (
+                  <div key={tag.id} className="tag-manager-row">
+                    <input
+                      type="text"
+                      value={editingTagName}
+                      onChange={(e) => setEditingTagName(e.target.value)}
+                    />
+                    <div className="checkbox-item">
+                      <input
+                        type="checkbox"
+                        id={`tag-enabled-${tag.id}`}
+                        checked={editingTagEnabled}
+                        onChange={(e) => setEditingTagEnabled(e.target.checked)}
+                      />
+                      <label htmlFor={`tag-enabled-${tag.id}`}>Enabled</label>
+                    </div>
+                    <button className="icon-btn-text" onClick={handleSaveEditTag} title="Save">
+                      <i className="fa-solid fa-check"></i>
+                    </button>
+                    <button className="icon-btn-text" onClick={() => setEditingTagId(null)} title="Cancel">
+                      <i className="fa-solid fa-xmark"></i>
+                    </button>
+                  </div>
+                ) : (
+                  <div key={tag.id} className="tag-manager-row">
+                    <span style={{ flex: 1, opacity: tag.isEnabled ? 1 : 0.5 }}>
+                      {tag.name}
+                      {!tag.isEnabled && ' (disabled)'}
+                    </span>
+                    <button className="icon-btn-text" onClick={() => handleStartEditTag(tag)} title="Edit">
+                      <i className="fa-solid fa-pen"></i>
+                    </button>
+                    <button className="icon-btn-text" onClick={() => handleDeleteTag(tag.id)} title="Delete">
+                      <i className="fa-solid fa-trash-can"></i>
+                    </button>
+                  </div>
+                )
+              )
+            )}
+          </div>
+
+          {tagManagerError && <div className="modal-error">{tagManagerError}</div>}
+
+          <div className="modal-actions">
+            <button className="btn secondary" onClick={() => setShowTagManagerModal(false)}>
+              Close
+            </button>
+          </div>
+        </div>
+      </Modal>
+
       {/* --- Style Modal (Add/Edit) --- */}
       <Modal
         title={editingStyle ? 'Edit Style Preset' : 'New Style Preset'}
@@ -917,6 +1094,18 @@ export const StyleManagerPage: React.FC = () => {
               value={styleNegativePrompt}
               onChange={(e) => setStyleNegativePrompt(e.target.value)}
               className="multiline-textarea"
+            />
+          </div>
+
+          <div className="form-group">
+            <label>
+              Tags (internal - powers "Recommended For You" / "You may also
+              like", never shown in the app)
+            </label>
+            <TagInput
+              allTags={tags}
+              selectedTagIds={styleTagIds}
+              onChange={setStyleTagIds}
             />
           </div>
 

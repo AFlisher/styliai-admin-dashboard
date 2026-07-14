@@ -12,6 +12,10 @@ vi.mock('../../services/api', () => ({
     deleteStyle: vi.fn(),
     reorderStyles: vi.fn(),
     reorderCategories: vi.fn(),
+    getTags: vi.fn(),
+    addTag: vi.fn(),
+    updateTag: vi.fn(),
+    deleteTag: vi.fn(),
   },
 }));
 
@@ -36,6 +40,7 @@ describe('StyleManagerPage - edit preserves sortOrder (Phase A regression)', () 
     vi.clearAllMocks();
     (apiService.getCategories as any).mockResolvedValue([CATEGORY]);
     (apiService.getStyles as any).mockResolvedValue([STYLE]);
+    (apiService.getTags as any).mockResolvedValue([]);
     (apiService.updateStyle as any).mockResolvedValue({ ...STYLE, name: STYLE.name });
   });
 
