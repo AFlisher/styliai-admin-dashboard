@@ -6,6 +6,7 @@ import type { components, paths } from './api-generated';
 export type UserModel = components['schemas']['AdminUser'];
 export type CategoryModel = components['schemas']['Category'];
 export type StyleModel = components['schemas']['Style'];
+export type TagModel = components['schemas']['Tag'];
 export type AdminStats = components['schemas']['AdminStats'];
 export type AuthResponse = components['schemas']['AdminAuthResponse'];
 export type AdminUserSearchResult = components['schemas']['AdminUserSearchResult'];
@@ -20,3 +21,6 @@ export type StyleCreateInput =
 
 export type CreditPackInput =
   paths['/api/credit-packs']['post']['requestBody']['content']['application/json'];
+
+export type TagCreateInput =
+  paths['/api/tags']['post']['requestBody']['content']['application/json'];

@@ -1,4 +1,4 @@
-import { CategoryModel, StyleModel, StyleCreateInput, AdminStats, AuthResponse, AdminUserSearchResult, CreditPack, CreditPackInput } from '../types';
+import { CategoryModel, StyleModel, StyleCreateInput, TagModel, TagCreateInput, AdminStats, AuthResponse, AdminUserSearchResult, CreditPack, CreditPackInput } from '../types';
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
 
@@ -141,6 +141,31 @@ export const apiService = {
     return apiCall<void>('/api/styles/reorder', {
       method: 'PUT',
       body: JSON.stringify({ styles }),
+    });
+  },
+
+  // Tags (internal ranking metadata for RecommendationService - never shown to end users)
+  async getTags(): Promise<TagModel[]> {
+    return apiCall<TagModel[]>('/api/tags');
+  },
+
+  async addTag(tag: TagCreateInput): Promise<TagModel> {
+    return apiCall<TagModel>('/api/tags', {
+      method: 'POST',
+      body: JSON.stringify(tag),
+    });
+  },
+
+  async updateTag(id: string, updates: Partial<TagModel>): Promise<TagModel> {
+    return apiCall<TagModel>(`/api/tags/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(updates),
+    });
+  },
+
+  async deleteTag(id: string): Promise<void> {
+    return apiCall<void>(`/api/tags/${id}`, {
+      method: 'DELETE',
     });
   },
 

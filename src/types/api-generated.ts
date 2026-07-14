@@ -1009,12 +1009,14 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** List styles. Defaults to enabled-only unless all=true (used by the admin dashboard). */
+        /** List styles. Defaults to enabled-only unless all=true (used by the admin dashboard). recommended=true returns the personalized "Recommended For You" feed instead (requires userBearerAuth; returns [] if the caller is anonymous, personalization is off, or there's no favorite/creation history yet - see RecommendationService). */
         get: {
             parameters: {
                 query?: {
                     categoryId?: string;
                     all?: "true";
+                    trending?: "true";
+                    recommended?: "true";
                 };
                 header?: never;
                 path?: never;
@@ -1060,6 +1062,8 @@ export interface paths {
                         /** @default true */
                         isEnabled?: boolean;
                         sortOrder?: number;
+                        /** @default [] */
+                        tagIds?: string[];
                     };
                 };
             };
@@ -1093,6 +1097,55 @@ export interface paths {
                 };
             };
         };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/styles/{id}/similar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** "You may also like" - styles similar to the given anchor style, ranked by RecommendationService. Anonymous-safe: no auth required, and not gated by the personalization setting since it's style-to-style, not user history. */
+        get: {
+            parameters: {
+                query?: {
+                    limit?: number;
+                };
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Similar styles */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Style"][];
+                    };
+                };
+                /** @description Style not found or disabled */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorMessage"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1186,6 +1239,7 @@ export interface paths {
                         isPremium?: boolean;
                         isEnabled?: boolean;
                         sortOrder?: number;
+                        tagIds?: string[];
                     };
                 };
             };
@@ -1221,6 +1275,180 @@ export interface paths {
         };
         post?: never;
         /** Delete a style. */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Deleted */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorMessage"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/tags": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List all tags. Admin-only - tags are internal ranking metadata, never listed for the mobile app. */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Tag list */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Tag"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Create a tag. */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        name: string;
+                        /** @default true */
+                        isEnabled?: boolean;
+                    };
+                };
+            };
+            responses: {
+                /** @description Created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Tag"];
+                    };
+                };
+                /** @description Validation error */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorMessage"];
+                    };
+                };
+                /** @description Duplicate tag name */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorMessage"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/tags/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Update a tag. */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        name: string;
+                        isEnabled?: boolean;
+                    };
+                };
+            };
+            responses: {
+                /** @description Updated */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Tag"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorMessage"];
+                    };
+                };
+                /** @description Duplicate tag name */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorMessage"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        /** Delete a tag. */
         delete: {
             parameters: {
                 query?: never;
@@ -1817,6 +2045,7 @@ export interface components {
             /** Format: date-time */
             updatedAt?: string;
         };
+        /** @description Admin-shaped Style (includes prompt/negativePrompt/tagIds). Non-admin callers (the mobile app) get an allowlisted subset with prompt, negativePrompt and tagIds omitted entirely - tags are internal ranking metadata, never exposed to end users - see styleModel.getPublicStyles. */
         Style: {
             /** Format: uuid */
             id: string;
@@ -1831,6 +2060,19 @@ export interface components {
             isPremium: boolean;
             isEnabled: boolean;
             sortOrder: number;
+            /** Format: date-time */
+            createdAt?: string;
+            /** Format: date-time */
+            updatedAt?: string;
+            /** @description Admin-only. Curated tag ids assigned to this style, used by RecommendationService. */
+            tagIds?: string[];
+        };
+        Tag: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            slug: string;
+            isEnabled: boolean;
             /** Format: date-time */
             createdAt?: string;
             /** Format: date-time */
