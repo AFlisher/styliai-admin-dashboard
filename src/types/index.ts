@@ -19,6 +19,34 @@ export type CreditPack = components['schemas']['CreditPack'];
 export type StyleCreateInput =
   paths['/api/styles']['post']['requestBody']['content']['application/json'];
 
+// Dynamic input field for a style's prompt template. Hand-written (the
+// backend accepts this shape on POST/PUT /api/styles and returns it on the
+// Style object); mirrors backend/src/utils/promptTemplate.js.
+export type StyleFieldType =
+  | 'text'
+  | 'textarea'
+  | 'number'
+  | 'dropdown'
+  | 'checkbox'
+  | 'color'
+  | 'date';
+
+export interface StyleFieldOption {
+  value: string;
+  label: string;
+}
+
+export interface StyleField {
+  key: string;
+  label: string;
+  type: StyleFieldType;
+  required: boolean;
+  placeholder?: string | null;
+  options?: StyleFieldOption[] | null;
+  config?: Record<string, unknown>;
+  sortOrder?: number;
+}
+
 export type CreditPackInput =
   paths['/api/credit-packs']['post']['requestBody']['content']['application/json'];
 

@@ -1,4 +1,4 @@
-import { CategoryModel, StyleModel, StyleCreateInput, TagModel, TagCreateInput, AdminStats, AuthResponse, AdminUserSearchResult, CreditPack, CreditPackInput } from '../types';
+import { CategoryModel, StyleModel, StyleCreateInput, StyleField, TagModel, TagCreateInput, AdminStats, AuthResponse, AdminUserSearchResult, CreditPack, CreditPackInput } from '../types';
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
 
@@ -117,14 +117,16 @@ export const apiService = {
     return apiCall<StyleModel[]>('/api/styles?all=true');
   },
 
-  async addStyle(style: StyleCreateInput): Promise<StyleModel> {
+  // `fields` (dynamic prompt-template inputs) isn't in the generated OpenAPI
+  // request type yet, so it's accepted as an optional extra here.
+  async addStyle(style: StyleCreateInput & { fields?: StyleField[] }): Promise<StyleModel> {
     return apiCall<StyleModel>('/api/styles', {
       method: 'POST',
       body: JSON.stringify(style),
     });
   },
 
-  async updateStyle(id: string, updates: Partial<StyleModel>): Promise<StyleModel> {
+  async updateStyle(id: string, updates: Partial<StyleModel> & { fields?: StyleField[] }): Promise<StyleModel> {
     return apiCall<StyleModel>(`/api/styles/${id}`, {
       method: 'PUT',
       body: JSON.stringify(updates),
