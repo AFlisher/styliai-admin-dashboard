@@ -47,7 +47,7 @@ describe('FieldsEditor', () => {
     const { onChange } = setup([teamField], '{{team}}');
     const labelInput = screen.getByDisplayValue('Team');
     fireEvent.change(labelInput, { target: { value: 'Club' } });
-    const next = onChange.mock.calls.at(-1)![0] as StyleField[];
+    const next = onChange.mock.calls[onChange.mock.calls.length - 1][0] as StyleField[];
     expect(next[0].label).toBe('Club');
   });
 
@@ -62,12 +62,33 @@ describe('FieldsEditor', () => {
     const b: StyleField = { key: 'b', label: 'B', type: 'text', required: false };
     const { onChange } = setup([a, b], '{{a}} {{b}}');
     fireEvent.click(screen.getAllByTitle('Move down')[0]);
-    const next = onChange.mock.calls.at(-1)![0] as StyleField[];
+    const next = onChange.mock.calls[onChange.mock.calls.length - 1][0] as StyleField[];
     expect(next.map((f) => f.key)).toEqual(['b', 'a']);
   });
 
   it('renders a form preview reflecting the fields', () => {
     setup([teamField], '{{team}}');
     expect(screen.getByText(/Form preview/i)).toBeTruthy();
+  });
+
+  it('warns (not errors) about an unused field not referenced by the prompt', () => {
+    setup([teamField, { key: 'extra', label: 'Extra', type: 'text', required: false }], '{{team}}');
+    expect(screen.getByText(/not referenced by the prompt/i)).toBeTruthy();
+  });
+
+  it('edits validation metadata (minLength) into the field config', () => {
+    const { onChange } = setup([teamField], '{{team}}');
+    fireEvent.change(screen.getByPlaceholderText('^[A-Z]{3}$'), { target: { value: '^[A-Z]+$' } });
+    const next = onChange.mock.calls[onChange.mock.calls.length - 1][0] as StyleField[];
+    expect(next[0].config?.regex).toBe('^[A-Z]+$');
+  });
+
+  it('stores numeric min/max config for number fields', () => {
+    const numberField: StyleField = { key: 'age', label: 'Age', type: 'number', required: true };
+    const { onChange } = setup([numberField], '{{age}}');
+    const minInput = screen.getByText('Min').parentElement!.querySelector('input')!;
+    fireEvent.change(minInput, { target: { value: '18' } });
+    const next = onChange.mock.calls[onChange.mock.calls.length - 1][0] as StyleField[];
+    expect(next[0].config?.min).toBe(18);
   });
 });

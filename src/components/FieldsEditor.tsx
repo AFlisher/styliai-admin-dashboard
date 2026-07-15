@@ -85,6 +85,27 @@ export const FieldsEditor: React.FC<Props> = ({ fields, onChange, prompt }) => {
     update(index, { options });
   };
 
+  // Merge a single validation-metadata key into a field's config. An empty
+  // value removes the key so we never persist blank rules.
+  const setConfig = (index: number, key: string, raw: string) => {
+    const field = fields[index];
+    const config: Record<string, unknown> = { ...(field.config ?? {}) };
+    if (raw.trim() === '') {
+      delete config[key];
+    } else if (key === 'minLength' || key === 'maxLength' || key === 'min' || key === 'max') {
+      const n = Number(raw);
+      if (Number.isFinite(n)) config[key] = n;
+    } else {
+      config[key] = raw;
+    }
+    update(index, { config });
+  };
+
+  const cfg = (field: StyleField, key: string): string => {
+    const v = field.config?.[key];
+    return v === undefined || v === null ? '' : String(v);
+  };
+
   return (
     <div className="fields-editor">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
@@ -192,6 +213,43 @@ export const FieldsEditor: React.FC<Props> = ({ fields, onChange, prompt }) => {
                 />
               </div>
             )}
+
+            {/* Optional validation metadata (all stored in config; the app +
+                backend respect them without any per-style code). */}
+            <div style={{ marginTop: 8, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              {(field.type === 'text' || field.type === 'textarea') && (
+                <>
+                  <div style={{ flex: '1 1 90px' }}>
+                    <label style={{ fontSize: 11 }}>Min length</label>
+                    <input type="number" min={0} value={cfg(field, 'minLength')} onChange={(e) => setConfig(index, 'minLength', e.target.value)} />
+                  </div>
+                  <div style={{ flex: '1 1 90px' }}>
+                    <label style={{ fontSize: 11 }}>Max length</label>
+                    <input type="number" min={0} value={cfg(field, 'maxLength')} onChange={(e) => setConfig(index, 'maxLength', e.target.value)} />
+                  </div>
+                  <div style={{ flex: '2 1 160px' }}>
+                    <label style={{ fontSize: 11 }}>Regex</label>
+                    <input type="text" placeholder="^[A-Z]{3}$" value={cfg(field, 'regex')} onChange={(e) => setConfig(index, 'regex', e.target.value)} />
+                  </div>
+                </>
+              )}
+              {field.type === 'number' && (
+                <>
+                  <div style={{ flex: '1 1 90px' }}>
+                    <label style={{ fontSize: 11 }}>Min</label>
+                    <input type="number" value={cfg(field, 'min')} onChange={(e) => setConfig(index, 'min', e.target.value)} />
+                  </div>
+                  <div style={{ flex: '1 1 90px' }}>
+                    <label style={{ fontSize: 11 }}>Max</label>
+                    <input type="number" value={cfg(field, 'max')} onChange={(e) => setConfig(index, 'max', e.target.value)} />
+                  </div>
+                </>
+              )}
+              <div style={{ flex: '2 1 100%' }}>
+                <label style={{ fontSize: 11 }}>Help text</label>
+                <input type="text" placeholder="Shown under the field in the app" value={cfg(field, 'helpText')} onChange={(e) => setConfig(index, 'helpText', e.target.value)} />
+              </div>
+            </div>
           </div>
         );
       })}

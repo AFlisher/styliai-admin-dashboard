@@ -6,6 +6,7 @@ import { Modal } from '../components/Modal';
 import { ImageUploader } from '../components/ImageUploader';
 import { TagInput } from '../components/TagInput';
 import { FieldsEditor } from '../components/FieldsEditor';
+import { PromptPreview } from '../components/PromptPreview';
 
 export const StyleManagerPage: React.FC = () => {
   // Main Lists State
@@ -401,6 +402,18 @@ export const StyleManagerPage: React.FC = () => {
         setActionError(`Dropdown field "${f.key}" needs at least one option.`);
         return;
       }
+    }
+
+    // Block saving if the prompt references a placeholder with no matching
+    // field (the backend enforces this too; this is for instant feedback).
+    const placeholderRe = /\{\{\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*\}\}/g;
+    const referenced = new Set<string>();
+    let match: RegExpExecArray | null;
+    while ((match = placeholderRe.exec(stylePrompt)) !== null) referenced.add(match[1]);
+    const missing = [...referenced].filter((k) => !seenKeys.has(k));
+    if (missing.length > 0) {
+      setActionError(`Prompt uses ${missing.map((k) => `{{${k}}}`).join(', ')} with no matching field. Add a field for each.`);
+      return;
     }
 
     const payload = {
@@ -1140,6 +1153,10 @@ export const StyleManagerPage: React.FC = () => {
 
           <div className="form-group">
             <FieldsEditor fields={styleFields} onChange={setStyleFields} prompt={stylePrompt} />
+          </div>
+
+          <div className="form-group">
+            <PromptPreview prompt={stylePrompt} fields={styleFields} />
           </div>
 
           <div className="form-group form-row-wrap">

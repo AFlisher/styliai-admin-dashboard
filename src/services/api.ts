@@ -133,6 +133,15 @@ export const apiService = {
     });
   },
 
+  // Admin-only live prompt preview: renders the final prompt with sample
+  // values via the backend's real engine (exact match to generation).
+  async previewPrompt(input: { prompt: string; fields: StyleField[]; values: Record<string, unknown> }): Promise<{ prompt: string }> {
+    return apiCall<{ prompt: string }>('/api/styles/prompt-preview', {
+      method: 'POST',
+      body: JSON.stringify(input),
+    });
+  },
+
   async deleteStyle(id: string): Promise<void> {
     return apiCall<void>(`/api/styles/${id}`, {
       method: 'DELETE',
