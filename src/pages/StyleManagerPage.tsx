@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { apiService } from '../services/api';
-import { CategoryModel, StyleModel, TagModel } from '../types';
+import { CategoryModel, StyleModel, TagModel, StyleField } from '../types';
 import { Loader } from '../components/Loader';
 import { Modal } from '../components/Modal';
 import { ImageUploader } from '../components/ImageUploader';
 import { TagInput } from '../components/TagInput';
+import { FieldsEditor } from '../components/FieldsEditor';
+import { PromptPreview } from '../components/PromptPreview';
 
 export const StyleManagerPage: React.FC = () => {
   // Main Lists State
@@ -52,6 +54,7 @@ export const StyleManagerPage: React.FC = () => {
   const [stylePremium, setStylePremium] = useState(false);
   const [styleEnabled, setStyleEnabled] = useState(true);
   const [styleTagIds, setStyleTagIds] = useState<string[]>([]);
+  const [styleFields, setStyleFields] = useState<StyleField[]>([]);
 
   // Tag Manager Modal & Fields
   const [showTagManagerModal, setShowTagManagerModal] = useState(false);
@@ -308,6 +311,7 @@ export const StyleManagerPage: React.FC = () => {
     setStylePremium(false);
     setStyleEnabled(true);
     setStyleTagIds([]);
+    setStyleFields([]);
     setActionError(null);
     setShowStyleModal(true);
   };
@@ -324,6 +328,7 @@ export const StyleManagerPage: React.FC = () => {
     setStylePremium(style.isPremium);
     setStyleEnabled(style.isEnabled);
     setStyleTagIds(style.tagIds || []);
+    setStyleFields(((style as StyleModel & { fields?: StyleField[] }).fields) || []);
     setActionError(null);
     setShowStyleModal(true);
   };
@@ -339,6 +344,7 @@ export const StyleManagerPage: React.FC = () => {
     setStylePremium(style.isPremium);
     setStyleEnabled(style.isEnabled);
     setStyleTagIds(style.tagIds || []);
+    setStyleFields(((style as StyleModel & { fields?: StyleField[] }).fields) || []);
     setActionError(null);
 
     // Re-upload a fresh copy of the cover image rather than sharing the
@@ -375,6 +381,41 @@ export const StyleManagerPage: React.FC = () => {
       return;
     }
 
+    // Validate dynamic fields before hitting the API (the backend also
+    // enforces this, but a local check gives instant feedback).
+    const seenKeys = new Set<string>();
+    for (const f of styleFields) {
+      if (!/^[a-z][a-z0-9_]*$/.test(f.key)) {
+        setActionError(`Field key "${f.key || '(empty)'}" must be lower_snake_case.`);
+        return;
+      }
+      if (!f.label.trim()) {
+        setActionError(`Field "${f.key}" needs a label.`);
+        return;
+      }
+      if (seenKeys.has(f.key)) {
+        setActionError(`Duplicate field key "${f.key}".`);
+        return;
+      }
+      seenKeys.add(f.key);
+      if (f.type === 'dropdown' && (!f.options || f.options.length === 0)) {
+        setActionError(`Dropdown field "${f.key}" needs at least one option.`);
+        return;
+      }
+    }
+
+    // Block saving if the prompt references a placeholder with no matching
+    // field (the backend enforces this too; this is for instant feedback).
+    const placeholderRe = /\{\{\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*\}\}/g;
+    const referenced = new Set<string>();
+    let match: RegExpExecArray | null;
+    while ((match = placeholderRe.exec(stylePrompt)) !== null) referenced.add(match[1]);
+    const missing = [...referenced].filter((k) => !seenKeys.has(k));
+    if (missing.length > 0) {
+      setActionError(`Prompt uses ${missing.map((k) => `{{${k}}}`).join(', ')} with no matching field. Add a field for each.`);
+      return;
+    }
+
     const payload = {
       name: styleName.trim(),
       categoryId: styleCategory,
@@ -386,6 +427,7 @@ export const StyleManagerPage: React.FC = () => {
       isPremium: stylePremium,
       isEnabled: styleEnabled,
       tagIds: styleTagIds,
+      fields: styleFields.map((f, i) => ({ ...f, sortOrder: i })),
     };
 
     try {
@@ -1107,6 +1149,14 @@ export const StyleManagerPage: React.FC = () => {
               selectedTagIds={styleTagIds}
               onChange={setStyleTagIds}
             />
+          </div>
+
+          <div className="form-group">
+            <FieldsEditor fields={styleFields} onChange={setStyleFields} prompt={stylePrompt} />
+          </div>
+
+          <div className="form-group">
+            <PromptPreview prompt={stylePrompt} fields={styleFields} />
           </div>
 
           <div className="form-group form-row-wrap">
