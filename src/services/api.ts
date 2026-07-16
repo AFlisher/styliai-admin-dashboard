@@ -133,6 +133,16 @@ export const apiService = {
     });
   },
 
+  // Quick toggle actions (Trending / Enable-Disable). PATCH so no full style
+  // payload is needed and no other field can be overwritten - the PUT above
+  // is a full replace that rejects partial bodies.
+  async patchStyleFlags(id: string, flags: { isTrending?: boolean; isEnabled?: boolean }): Promise<StyleModel> {
+    return apiCall<StyleModel>(`/api/styles/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(flags),
+    });
+  },
+
   // Admin-only live prompt preview: renders the final prompt with sample
   // values via the backend's real engine (exact match to generation).
   async previewPrompt(input: { prompt: string; fields: StyleField[]; values: Record<string, unknown> }): Promise<{ prompt: string }> {

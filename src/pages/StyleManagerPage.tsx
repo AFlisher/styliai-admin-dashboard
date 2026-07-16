@@ -32,6 +32,15 @@ export const StyleManagerPage: React.FC = () => {
   // Action Statuses
   const [actionError, setActionError] = useState<string | null>(null);
 
+  // Transient success/error toast for the quick toggle actions
+  const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+
+  useEffect(() => {
+    if (!toast) return;
+    const timer = setTimeout(() => setToast(null), 3000);
+    return () => clearTimeout(timer);
+  }, [toast]);
+
   // Shared confirmation dialog (replaces native confirm())
   const [confirmDialog, setConfirmDialog] = useState<{ message: string; onConfirm: () => void } | null>(null);
 
@@ -333,43 +342,6 @@ export const StyleManagerPage: React.FC = () => {
     setShowStyleModal(true);
   };
 
-  const handleOpenDuplicateStyle = async (style: StyleModel) => {
-    setEditingStyle(null); // Save as new style
-    setStyleName(`${style.name} (Copy)`);
-    setStyleCategory(style.categoryId);
-    setStylePrompt(style.prompt);
-    setStyleNegativePrompt(style.negativePrompt || '');
-    setStyleCreditCost(style.creditCost || 1);
-    setStyleTrending(style.isTrending);
-    setStylePremium(style.isPremium);
-    setStyleEnabled(style.isEnabled);
-    setStyleTagIds(style.tagIds || []);
-    setStyleFields(((style as StyleModel & { fields?: StyleField[] }).fields) || []);
-    setActionError(null);
-
-    // Re-upload a fresh copy of the cover image rather than sharing the
-    // original's URL - otherwise, later replacing either style's cover
-    // image would delete the shared Storage object out from under the
-    // other one (ImageUploader cleans up the previous image on replace).
-    if (style.coverImage) {
-      try {
-        const ext = new URL(style.coverImage).pathname.split('.').pop() || 'jpg';
-        const sourceResponse = await fetch(style.coverImage);
-        const blob = await sourceResponse.blob();
-        const file = new File([blob], `cover-image.${ext}`, { type: blob.type || 'image/jpeg' });
-        const uploaded = await apiService.uploadImage(file);
-        setStyleCoverImage(uploaded.url);
-      } catch {
-        setStyleCoverImage('');
-        setActionError('Could not duplicate the cover image automatically - please choose one manually.');
-      }
-    } else {
-      setStyleCoverImage('');
-    }
-
-    setShowStyleModal(true);
-  };
-
   const handleSaveStyle = async () => {
     setActionError(null);
     if (!styleName.trim()) {
@@ -468,29 +440,32 @@ export const StyleManagerPage: React.FC = () => {
   };
 
   const handleToggleStyleEnabled = async (style: StyleModel) => {
+    const nextEnabled = !style.isEnabled;
+    // Optimistic flip, reverted on failure (same pattern as drag & drop reorder).
+    const previousStyles = styles;
+    setStyles(styles.map((s) => (s.id === style.id ? { ...s, isEnabled: nextEnabled } : s)));
     try {
-      const updated = await apiService.updateStyle(style.id, { isEnabled: !style.isEnabled });
-      setStyles(styles.map((s) => (s.id === style.id ? updated : s)));
+      const updated = await apiService.patchStyleFlags(style.id, { isEnabled: nextEnabled });
+      setStyles((current) => current.map((s) => (s.id === style.id ? updated : s)));
+      setToast({ type: 'success', message: `"${style.name}" ${nextEnabled ? 'enabled' : 'disabled'}.` });
     } catch (err: any) {
-      setActionError(err.message || 'Failed to update status.');
+      setStyles(previousStyles);
+      setToast({ type: 'error', message: err.message || 'Failed to update status.' });
     }
   };
 
   const handleToggleStyleTrending = async (style: StyleModel) => {
+    const nextTrending = !style.isTrending;
+    // Optimistic flip, reverted on failure (same pattern as drag & drop reorder).
+    const previousStyles = styles;
+    setStyles(styles.map((s) => (s.id === style.id ? { ...s, isTrending: nextTrending } : s)));
     try {
-      const updated = await apiService.updateStyle(style.id, { isTrending: !style.isTrending });
-      setStyles(styles.map((s) => (s.id === style.id ? updated : s)));
+      const updated = await apiService.patchStyleFlags(style.id, { isTrending: nextTrending });
+      setStyles((current) => current.map((s) => (s.id === style.id ? updated : s)));
+      setToast({ type: 'success', message: `"${style.name}" ${nextTrending ? 'marked as trending' : 'removed from trending'}.` });
     } catch (err: any) {
-      setActionError(err.message || 'Failed to update status.');
-    }
-  };
-
-  const handleToggleStylePremium = async (style: StyleModel) => {
-    try {
-      const updated = await apiService.updateStyle(style.id, { isPremium: !style.isPremium });
-      setStyles(styles.map((s) => (s.id === style.id ? updated : s)));
-    } catch (err: any) {
-      setActionError(err.message || 'Failed to update status.');
+      setStyles(previousStyles);
+      setToast({ type: 'error', message: err.message || 'Failed to update status.' });
     }
   };
 
@@ -866,13 +841,6 @@ export const StyleManagerPage: React.FC = () => {
                     </button>
                     <button
                       className="icon-btn"
-                      title={style.isPremium ? 'Remove Premium Lock' : 'Mark as Premium'}
-                      onClick={() => handleToggleStylePremium(style)}
-                    >
-                      <i className="fa-solid fa-lock" style={{ color: style.isPremium ? '#e735f6' : 'white' }}></i>
-                    </button>
-                    <button
-                      className="icon-btn"
                       title={style.isEnabled ? 'Disable Style' : 'Enable Style'}
                       onClick={() => handleToggleStyleEnabled(style)}
                     >
@@ -881,13 +849,6 @@ export const StyleManagerPage: React.FC = () => {
                       ) : (
                         <i className="fa-solid fa-eye-slash" style={{ color: 'var(--text-muted)' }}></i>
                       )}
-                    </button>
-                    <button
-                      className="icon-btn"
-                      title="Duplicate Style"
-                      onClick={() => handleOpenDuplicateStyle(style)}
-                    >
-                      <i className="fa-solid fa-clone"></i>
                     </button>
                     <button
                       className="icon-btn"
@@ -1315,6 +1276,13 @@ export const StyleManagerPage: React.FC = () => {
           </div>
         </div>
       </Modal>
+
+      {toast && (
+        <div className={`toast-notification ${toast.type}`} role="status">
+          <i className={`fa-solid ${toast.type === 'success' ? 'fa-circle-check' : 'fa-circle-exclamation'}`}></i>
+          <span>{toast.message}</span>
+        </div>
+      )}
 
       {activePreviewImage && (
         <div className="image-preview-overlay" onClick={() => setActivePreviewImage(null)}>

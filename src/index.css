@@ -1642,3 +1642,41 @@ tr:hover td {
 .preset-img-clickable:hover {
   filter: brightness(1.15);
 }
+
+/* Transient toast for quick toggle actions (Trending / Enable-Disable) */
+.toast-notification {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 18px;
+  border-radius: 8px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  font-size: 14px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  animation: toast-slide-in 0.2s ease-out;
+}
+
+.toast-notification.success i {
+  color: var(--success);
+}
+
+.toast-notification.error i {
+  color: var(--error);
+}
+
+@keyframes toast-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
