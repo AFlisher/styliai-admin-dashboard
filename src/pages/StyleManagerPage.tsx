@@ -58,6 +58,8 @@ export const StyleManagerPage: React.FC = () => {
   const [stylePrompt, setStylePrompt] = useState('');
   const [styleNegativePrompt, setStyleNegativePrompt] = useState('');
   const [styleCreditCost, setStyleCreditCost] = useState(1);
+  const [styleMinImages, setStyleMinImages] = useState(1);
+  const [styleMaxImages, setStyleMaxImages] = useState(1);
   const [styleCoverImage, setStyleCoverImage] = useState('');
   const [styleTrending, setStyleTrending] = useState(false);
   const [stylePremium, setStylePremium] = useState(false);
@@ -315,6 +317,8 @@ export const StyleManagerPage: React.FC = () => {
     setStylePrompt('');
     setStyleNegativePrompt('');
     setStyleCreditCost(1);
+    setStyleMinImages(1);
+    setStyleMaxImages(1);
     setStyleCoverImage('');
     setStyleTrending(false);
     setStylePremium(false);
@@ -332,6 +336,8 @@ export const StyleManagerPage: React.FC = () => {
     setStylePrompt(style.prompt);
     setStyleNegativePrompt(style.negativePrompt || '');
     setStyleCreditCost(style.creditCost || 1);
+    setStyleMinImages(style.minImages || 1);
+    setStyleMaxImages(style.maxImages || 1);
     setStyleCoverImage(style.coverImage || '');
     setStyleTrending(style.isTrending);
     setStylePremium(style.isPremium);
@@ -388,12 +394,27 @@ export const StyleManagerPage: React.FC = () => {
       return;
     }
 
+    if (!Number.isInteger(styleMinImages) || styleMinImages < 1) {
+      setActionError('Minimum Images must be at least 1.');
+      return;
+    }
+    if (!Number.isInteger(styleMaxImages) || styleMaxImages < styleMinImages) {
+      setActionError('Maximum Images must be greater than or equal to Minimum Images.');
+      return;
+    }
+    if (styleMaxImages > 5) {
+      setActionError('Maximum Images cannot exceed 5.');
+      return;
+    }
+
     const payload = {
       name: styleName.trim(),
       categoryId: styleCategory,
       prompt: stylePrompt.trim(),
       negativePrompt: styleNegativePrompt.trim() || undefined,
       creditCost: styleCreditCost,
+      minImages: styleMinImages,
+      maxImages: styleMaxImages,
       coverImage: styleCoverImage,
       isTrending: styleTrending,
       isPremium: stylePremium,
@@ -1070,6 +1091,29 @@ export const StyleManagerPage: React.FC = () => {
               value={styleCreditCost}
               onChange={(e) => setStyleCreditCost(Number(e.target.value))}
             />
+          </div>
+
+          <div className="form-group form-row">
+            <div className="form-group">
+              <label>Minimum Images</label>
+              <input
+                type="number"
+                min="1"
+                max="5"
+                value={styleMinImages}
+                onChange={(e) => setStyleMinImages(Number(e.target.value))}
+              />
+            </div>
+            <div className="form-group">
+              <label>Maximum Images</label>
+              <input
+                type="number"
+                min="1"
+                max="5"
+                value={styleMaxImages}
+                onChange={(e) => setStyleMaxImages(Number(e.target.value))}
+              />
+            </div>
           </div>
 
           <ImageUploader
