@@ -1002,6 +1002,70 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/styles/prompt-preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Admin-only live prompt preview. Renders the final prompt from a prompt + field definitions + sample values using the same engine as generation, so the dashboard preview matches production exactly. Never exposed to non-admins. */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        prompt: string;
+                        fields?: components["schemas"]["StyleField"][];
+                        values?: {
+                            [key: string]: unknown;
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description Rendered prompt */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            prompt?: string;
+                        };
+                    };
+                };
+                /** @description Validation error */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorMessage"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/styles": {
         parameters: {
             query?: never;
@@ -1055,6 +1119,10 @@ export interface paths {
                         coverImage?: string | null;
                         /** @default 1 */
                         creditCost?: number;
+                        /** @default 1 */
+                        minImages?: number;
+                        /** @default 1 */
+                        maxImages?: number;
                         /** @default false */
                         isTrending?: boolean;
                         /** @default false */
@@ -1062,8 +1130,18 @@ export interface paths {
                         /** @default true */
                         isEnabled?: boolean;
                         sortOrder?: number;
-                        /** @default [] */
+                        /**
+                         * @description Ignored unless autoAssignTags is explicitly false.
+                         * @default []
+                         */
                         tagIds?: string[];
+                        /**
+                         * @description When true (default), tagIds is computed by autoTagService from name/prompt/category and any client-sent tagIds is ignored. Set false to use tagIds as a manual override.
+                         * @default true
+                         */
+                        autoAssignTags?: boolean;
+                        /** @description Dynamic input field definitions. Replaces the style's full field set. Omit to leave unchanged. */
+                        fields?: components["schemas"]["StyleField"][];
                     };
                 };
             };
@@ -1235,11 +1313,18 @@ export interface paths {
                         negativePrompt?: string | null;
                         coverImage?: string | null;
                         creditCost?: number;
+                        /** @default 1 */
+                        minImages?: number;
+                        /** @default 1 */
+                        maxImages?: number;
                         isTrending?: boolean;
                         isPremium?: boolean;
                         isEnabled?: boolean;
                         sortOrder?: number;
+                        /** @description Used verbatim only when autoAssignTags is false; otherwise ignored. */
                         tagIds?: string[];
+                        /** @description Omit to leave existing tags untouched (e.g. quick isTrending/isPremium/isEnabled toggles). true re-runs autoTagService using this request's name/prompt/category; false stores tagIds as a manual override. */
+                        autoAssignTags?: boolean;
                     };
                 };
             };
@@ -1306,7 +1391,54 @@ export interface paths {
         };
         options?: never;
         head?: never;
-        patch?: never;
+        /** Partially update a style's quick-toggle flags (Trending / Enable-Disable). Unlike PUT, no full payload is required and no other field is touched. At least one of isTrending/isEnabled must be sent. */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        isTrending?: boolean;
+                        isEnabled?: boolean;
+                    };
+                };
+            };
+            responses: {
+                /** @description Updated */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Style"];
+                    };
+                };
+                /** @description Validation error */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorMessage"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorMessage"];
+                    };
+                };
+            };
+        };
         trace?: never;
     };
     "/api/tags": {
@@ -2056,6 +2188,10 @@ export interface components {
             negativePrompt: string | null;
             coverImage: string | null;
             creditCost: number;
+            /** @default 1 */
+            minImages: number;
+            /** @default 1 */
+            maxImages: number;
             isTrending: boolean;
             isPremium: boolean;
             isEnabled: boolean;
@@ -2066,6 +2202,33 @@ export interface components {
             updatedAt?: string;
             /** @description Admin-only. Curated tag ids assigned to this style, used by RecommendationService. */
             tagIds?: string[];
+            /** @description Admin-only. True if tagIds was last set by autoTagService rather than a manual dashboard edit - controls whether a future save re-runs classification or preserves a manual override. */
+            tagsAutoAssigned?: boolean;
+            /** @description Dynamic input fields backing the prompt's {{placeholder}} tokens. Empty for classic styles. Returned on both admin and public reads (the field definitions are safe to expose; the prompt is not). */
+            fields?: components["schemas"]["StyleField"][];
+        };
+        /** @description One dynamic input field for a style's prompt template. */
+        StyleField: {
+            /** @description Placeholder key referenced as {{key}} in the prompt (lower_snake_case). */
+            key: string;
+            label: string;
+            /**
+             * @description Control type. New types may be added without breaking older clients.
+             * @enum {string}
+             */
+            type: "text" | "textarea" | "number" | "dropdown" | "checkbox" | "color" | "date";
+            required: boolean;
+            placeholder?: string | null;
+            /** @description For dropdown fields. */
+            options?: {
+                value: string;
+                label: string;
+            }[] | null;
+            /** @description Extensible per-type knobs (e.g. min, max, maxLength, default, trueText). */
+            config?: {
+                [key: string]: unknown;
+            };
+            sortOrder?: number;
         };
         Tag: {
             /** Format: uuid */

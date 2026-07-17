@@ -128,3 +128,62 @@ describe('StyleManagerPage - quick toggle actions (Trending / Enable-Disable)', 
     expect(screen.queryByTitle('Mark as Premium')).toBeNull();
   });
 });
+
+const boundsInput = (label: string) =>
+  screen.getByText(label).parentElement!.querySelector('input') as HTMLInputElement;
+
+describe('StyleManagerPage - per-style image counts', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    (apiService.getCategories as any).mockResolvedValue([CATEGORY]);
+    (apiService.getStyles as any).mockResolvedValue([
+      { ...STYLE, minImages: 2, maxImages: 3 },
+    ]);
+    (apiService.getTags as any).mockResolvedValue([]);
+    (apiService.updateStyle as any).mockResolvedValue({ ...STYLE, minImages: 2, maxImages: 3 });
+  });
+
+  it('prefills the bounds from the style and sends them on save', async () => {
+    render(<StyleManagerPage />);
+    await screen.findByText('Spec Style');
+    fireEvent.click(screen.getByTitle('Edit Preset Settings'));
+    await screen.findByText('Update Preset');
+
+    expect(boundsInput('Minimum Images').value).toBe('2');
+    expect(boundsInput('Maximum Images').value).toBe('3');
+
+    fireEvent.click(screen.getByText('Update Preset'));
+    await waitFor(() => expect(apiService.updateStyle).toHaveBeenCalledTimes(1));
+    expect(apiService.updateStyle).toHaveBeenCalledWith(
+      'style-1',
+      expect.objectContaining({ minImages: 2, maxImages: 3 })
+    );
+  });
+
+  it('blocks saving when Maximum Images is below Minimum Images', async () => {
+    render(<StyleManagerPage />);
+    await screen.findByText('Spec Style');
+    fireEvent.click(screen.getByTitle('Edit Preset Settings'));
+    await screen.findByText('Update Preset');
+
+    fireEvent.change(boundsInput('Maximum Images'), { target: { value: '1' } });
+    fireEvent.click(screen.getByText('Update Preset'));
+
+    expect(await screen.findAllByText('Maximum Images must be greater than or equal to Minimum Images.')).not.toHaveLength(0);
+    expect(apiService.updateStyle).not.toHaveBeenCalled();
+  });
+
+  it('blocks saving when Maximum Images exceeds 5', async () => {
+    render(<StyleManagerPage />);
+    await screen.findByText('Spec Style');
+    fireEvent.click(screen.getByTitle('Edit Preset Settings'));
+    await screen.findByText('Update Preset');
+
+    fireEvent.change(boundsInput('Minimum Images'), { target: { value: '6' } });
+    fireEvent.change(boundsInput('Maximum Images'), { target: { value: '6' } });
+    fireEvent.click(screen.getByText('Update Preset'));
+
+    expect(await screen.findAllByText('Maximum Images cannot exceed 5.')).not.toHaveLength(0);
+    expect(apiService.updateStyle).not.toHaveBeenCalled();
+  });
+});
