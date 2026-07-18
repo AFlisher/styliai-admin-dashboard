@@ -1,4 +1,4 @@
-import { CategoryModel, StyleModel, StyleCreateInput, StyleField, TagModel, TagCreateInput, AdminStats, AuthResponse, AdminUserSearchResult, CreditPack, CreditPackInput } from '../types';
+import { CategoryModel, StyleModel, StyleCreateInput, StyleField, TagModel, TagCreateInput, AdminStats, AuthResponse, AdminUserSearchResult, CreditPack, CreditPackInput, UsersByCountryStats, CountryStatsRange } from '../types';
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
 
@@ -76,6 +76,10 @@ export const apiService = {
   // Stats
   async getStats(): Promise<AdminStats> {
     return apiCall<AdminStats>('/api/admin/stats');
+  },
+
+  async getUsersByCountry(range: CountryStatsRange): Promise<UsersByCountryStats> {
+    return apiCall<UsersByCountryStats>(`/api/admin/stats/countries?range=${range}`);
   },
 
   // Categories

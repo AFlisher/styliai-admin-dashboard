@@ -640,6 +640,63 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/stats/countries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Users-by-country breakdown, aggregated from public.users.country_code/country_name (Users by Country analytics). */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Defaults to allTime. Filters on users.created_at. */
+                    range?: "today" | "last7days" | "last30days" | "allTime";
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Country breakdown */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["UsersByCountryStats"];
+                    };
+                };
+                /** @description Invalid range param */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorMessage"];
+                    };
+                };
+                /** @description Missing/invalid admin token */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorMessage"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/admin/users/search": {
         parameters: {
             query?: never;
@@ -2289,6 +2346,19 @@ export interface components {
                 /** Format: date-time */
                 date: string;
             }[];
+        };
+        CountryStat: {
+            /** @description ISO 3166-1 alpha-2 code, e.g. US */
+            countryCode: string;
+            countryName: string;
+            userCount: number;
+            /** @description Percentage of users (within the selected range) that have this country, rounded to 2 decimals. */
+            percentage: number;
+        };
+        UsersByCountryStats: {
+            /** @enum {string} */
+            range: "today" | "last7days" | "last30days" | "allTime";
+            countries: components["schemas"]["CountryStat"][];
         };
         UploadResult: {
             /** Format: uri */
