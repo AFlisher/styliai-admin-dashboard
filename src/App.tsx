@@ -5,11 +5,12 @@ import AnalyticsPage from './pages/AnalyticsPage';
 import StyleManagerPage from './pages/StyleManagerPage';
 import UserCreditsPage from './pages/UserCreditsPage';
 import CreditPacksPage from './pages/CreditPacksPage';
+import UsersByCountryPage from './pages/UsersByCountryPage';
 import { Loader } from './components/Loader';
 
 const AppContent: React.FC = () => {
   const { user, isLoading, logout } = useAuth();
-  const [activeTab, setActiveTab] = useState<'analytics' | 'manager' | 'credits' | 'packs'>('analytics');
+  const [activeTab, setActiveTab] = useState<'analytics' | 'manager' | 'credits' | 'packs' | 'country'>('analytics');
 
   if (isLoading) {
     return <Loader type="page" />;
@@ -59,6 +60,12 @@ const AppContent: React.FC = () => {
             >
               <i className="fa-solid fa-box-open"></i> Credit Packs
             </button>
+            <button
+              className={`tab-btn ${activeTab === 'country' ? 'active' : ''}`}
+              onClick={() => setActiveTab('country')}
+            >
+              <i className="fa-solid fa-earth-americas"></i> Users by Country
+            </button>
           </div>
 
           <div className="user-profile-signout">
@@ -77,6 +84,7 @@ const AppContent: React.FC = () => {
         {activeTab === 'manager' && <StyleManagerPage />}
         {activeTab === 'credits' && <UserCreditsPage />}
         {activeTab === 'packs' && <CreditPacksPage />}
+        {activeTab === 'country' && <UsersByCountryPage />}
       </main>
 
       <footer className="admin-footer">

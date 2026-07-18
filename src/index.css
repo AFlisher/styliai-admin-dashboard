@@ -1680,3 +1680,164 @@ tr:hover td {
     transform: translateY(0);
   }
 }
+
+/* Users by Country analytics */
+.country-time-filter {
+  padding: 4px;
+}
+
+.country-stats-grid {
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  gap: 24px;
+}
+
+@media (max-width: 968px) {
+  .country-stats-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.world-map-panel {
+  min-width: 0;
+}
+
+.world-map-container {
+  position: relative;
+  width: 100%;
+}
+
+.world-map-svg {
+  width: 100%;
+  height: auto;
+}
+
+.map-tooltip {
+  position: absolute;
+  transform: translate(-50%, -110%);
+  background: #000;
+  border: 1px solid var(--border-color);
+  color: white;
+  font-size: 12px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+}
+
+.map-tooltip strong {
+  font-size: 13px;
+}
+
+.map-tooltip span {
+  color: var(--text-muted);
+}
+
+.map-legend {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.map-legend-swatch {
+  width: 120px;
+  height: 8px;
+  border-radius: 4px;
+}
+
+.map-legend-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.pie-chart-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.pie-chart-svg {
+  width: 100%;
+  max-width: 220px;
+  height: auto;
+}
+
+.pie-segment {
+  transition: filter 0.15s ease;
+  cursor: pointer;
+}
+
+.pie-segment:hover {
+  filter: brightness(1.2);
+}
+
+.pie-center-value {
+  fill: var(--text-main);
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.pie-center-label {
+  fill: var(--text-muted);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.pie-legend {
+  list-style: none;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pie-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  transition: background 0.15s ease;
+  cursor: default;
+}
+
+.pie-legend-item:hover,
+.pie-legend-item.active {
+  background: var(--bg-card-hover);
+}
+
+.pie-legend-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.pie-legend-name {
+  flex: 1;
+  font-size: 13px;
+  color: var(--text-main);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pie-legend-percentage {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.country-flag-cell {
+  font-size: 18px;
+}
