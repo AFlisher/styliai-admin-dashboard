@@ -83,6 +83,9 @@ export const StyleManagerPage: React.FC = () => {
   const [generatedPreviewUrl, setGeneratedPreviewUrl] = useState('');
   const [isPreviewGenerating, setIsPreviewGenerating] = useState(false);
   const [previewError, setPreviewError] = useState<string | null>(null);
+  // 'current' hits the existing generator (sample photo required); 'stability'
+  // hits the Stability AI admin test endpoint (text-to-image, no photo used).
+  const [previewProvider, setPreviewProvider] = useState<'current' | 'stability'>('current');
 
   // Fullscreen Image Preview Modal State
   const [activePreviewImage, setActivePreviewImage] = useState<string | null>(null);
@@ -562,6 +565,7 @@ export const StyleManagerPage: React.FC = () => {
     setGeneratedPreviewUrl('');
     setPreviewError(null);
     setIsPreviewGenerating(false);
+    setPreviewProvider('current');
     setShowPreviewModal(true);
   };
 
@@ -575,7 +579,7 @@ export const StyleManagerPage: React.FC = () => {
   };
 
   const handleGeneratePreview = async () => {
-    if (!previewFile) {
+    if (previewProvider === 'current' && !previewFile) {
       setPreviewError('Please choose a sample photo to upload first.');
       return;
     }
@@ -589,8 +593,13 @@ export const StyleManagerPage: React.FC = () => {
     setGeneratedPreviewUrl('');
 
     try {
-      const response = await apiService.previewStyle(previewStylePrompt, previewFile);
-      setGeneratedPreviewUrl(response.generatedImageUrl);
+      if (previewProvider === 'stability') {
+        const response = await apiService.previewStabilityStyle(previewStylePrompt);
+        setGeneratedPreviewUrl(response.imageUrl);
+      } else {
+        const response = await apiService.previewStyle(previewStylePrompt, previewFile!);
+        setGeneratedPreviewUrl(response.generatedImageUrl);
+      }
     } catch (err: any) {
       setPreviewError(err.message || 'Generation preview failed. Check if API is running.');
     } finally {
@@ -1233,9 +1242,25 @@ export const StyleManagerPage: React.FC = () => {
             Upload a sample portrait/photo to test the prompt modifier tag. This request will hit the generator API backend and show you the result without saving.
           </p>
 
+          <div className="filter-dropdown">
+            <label>Generation Provider</label>
+            <select
+              value={previewProvider}
+              onChange={(e) => setPreviewProvider(e.target.value as 'current' | 'stability')}
+            >
+              <option value="current">Current Provider</option>
+              <option value="stability">Stability AI</option>
+            </select>
+          </div>
+
           <div className="preview-uploader-layout">
             <div className="uploader-file-select">
-              <label>Select Sample Photo</label>
+              <label>
+                Select Sample Photo
+                {previewProvider === 'stability' && (
+                  <span style={{ fontWeight: 400, color: 'var(--text-muted)' }}> (not used by Stability AI)</span>
+                )}
+              </label>
               {previewSampleImage ? (
                 <div className="preview-sample-box">
                   <img src={previewSampleImage} alt="Sample Source" />
@@ -1292,7 +1317,7 @@ export const StyleManagerPage: React.FC = () => {
             </button>
             <button
               className="btn"
-              disabled={isPreviewGenerating || !previewFile}
+              disabled={isPreviewGenerating || (previewProvider === 'current' && !previewFile)}
               onClick={handleGeneratePreview}
             >
               {isPreviewGenerating ? 'Generating...' : 'Run Generation Test'}

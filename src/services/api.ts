@@ -222,6 +222,15 @@ export const apiService = {
     });
   },
 
+  // Stability AI generation preview (admin testing tool - no wallet charge,
+  // no creation-history write; text-to-image only, no sample photo sent).
+  async previewStabilityStyle(prompt: string): Promise<{ imageUrl: string }> {
+    return apiCall<{ imageUrl: string }>('/api/admin/ai/generate-preview', {
+      method: 'POST',
+      body: JSON.stringify({ prompt }),
+    });
+  },
+
   // Manual credit adjustment
   async searchUserByEmail(email: string): Promise<AdminUserSearchResult> {
     return apiCall<AdminUserSearchResult>(`/api/admin/users/search?email=${encodeURIComponent(email)}`);
