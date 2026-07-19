@@ -820,6 +820,80 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/ai/generate-preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Admin Dashboard "Test Prompt" tool. Reuses the same Stability AI generation as /api/ai/generate, but charges no wallet and writes no creation-history row - it's a testing aid, not a real user generation. */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        prompt: string;
+                        negativePrompt?: string;
+                        /** @example 16:9 */
+                        aspectRatio?: string;
+                        /** @example photographic */
+                        style?: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Generated */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AiGenerateResult"];
+                    };
+                };
+                /** @description Validation error */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorMessage"];
+                    };
+                };
+                /** @description Rate limited by Stability AI */
+                429: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorMessage"];
+                    };
+                };
+                /** @description Stability AI unavailable */
+                503: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorMessage"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/categories": {
         parameters: {
             query?: never;
@@ -1174,6 +1248,7 @@ export interface paths {
                         prompt: string;
                         negativePrompt?: string | null;
                         coverImage?: string | null;
+                        coverImageThumbnail?: string | null;
                         /** @default 1 */
                         creditCost?: number;
                         /** @default 1 */
@@ -1369,6 +1444,7 @@ export interface paths {
                         prompt: string;
                         negativePrompt?: string | null;
                         coverImage?: string | null;
+                        coverImageThumbnail?: string | null;
                         creditCost?: number;
                         /** @default 1 */
                         minImages?: number;
@@ -1839,6 +1915,95 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/ai/generate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Generate an image (WebP) from a text prompt via Stability AI. Charges credits atomically before calling the AI provider, refunds on failure - same flow as /api/generate. Fully independent of /api/generate (style-transfer) and the internal auto-tagging service otherwise - separate service/controller/route, no shared state. At least one of prompt/styleId is required - GET /api/styles never exposes a style's prompt text to the client, so styleId lets the caller ask for a style's prompt to be resolved server-side instead of supplying it directly (mirrors /api/generate's own server-side resolution). */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @description Raw prompt text. Omit and send styleId instead to have the server resolve it. */
+                        prompt?: string;
+                        /**
+                         * Format: uuid
+                         * @description Resolves prompt/negativePrompt server-side when prompt is omitted.
+                         */
+                        styleId?: string;
+                        negativePrompt?: string;
+                        /** @example 16:9 */
+                        aspectRatio?: string;
+                        /** @example photographic */
+                        style?: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Generated */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AiGenerateResult"];
+                    };
+                };
+                /** @description Validation error */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorCode"];
+                    };
+                };
+                /** @description Insufficient balance */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorCode"];
+                    };
+                };
+                /** @description Rate limited by Stability AI */
+                429: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorCode"];
+                    };
+                };
+                /** @description Stability AI unavailable */
+                503: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorCode"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/wallet": {
         parameters: {
             query?: never;
@@ -2244,6 +2409,8 @@ export interface components {
             prompt: string;
             negativePrompt: string | null;
             coverImage: string | null;
+            /** @description ~320x400 WebP browsing thumbnail. Null until the backfill/upload pipeline has generated one. */
+            coverImageThumbnail?: string | null;
             creditCost: number;
             /** @default 1 */
             minImages: number;
@@ -2363,11 +2530,25 @@ export interface components {
         UploadResult: {
             /** Format: uri */
             url: string;
+            /**
+             * Format: uri
+             * @description ~320x400 WebP browsing thumbnail. Null only if thumbnail generation failed - the original upload above still succeeded.
+             */
+            thumbnailUrl: string | null;
         };
         GenerateResult: {
             success: boolean;
             /** Format: uri */
             generatedImageUrl: string;
+            /** Format: uri */
+            thumbnailUrl: string | null;
+        };
+        AiGenerateResult: {
+            success: boolean;
+            /** Format: uri */
+            imageUrl: string;
+            /** Format: uri */
+            thumbnailUrl: string | null;
         };
         AdminUserSearchResult: {
             /** Format: uuid */

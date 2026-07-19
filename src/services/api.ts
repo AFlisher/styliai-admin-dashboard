@@ -194,11 +194,12 @@ export const apiService = {
     });
   },
 
-  // Cover Image upload
-  async uploadImage(file: File): Promise<{ url: string }> {
+  // Cover Image upload - the server generates and stores a browsing
+  // thumbnail alongside the original and returns both URLs.
+  async uploadImage(file: File): Promise<{ url: string; thumbnailUrl: string | null }> {
     const formData = new FormData();
     formData.append('file', file);
-    return apiCall<{ url: string }>('/api/upload', {
+    return apiCall<{ url: string; thumbnailUrl: string | null }>('/api/upload', {
       method: 'POST',
       body: formData,
     });

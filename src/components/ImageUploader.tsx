@@ -5,7 +5,9 @@ const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // matches the backend's adminImag
 
 interface ImageUploaderProps {
   value: string;
-  onChange: (url: string) => void;
+  // thumbnailUrl is passed alongside url so callers can persist both without
+  // a second round trip - the server generates it in the same upload call.
+  onChange: (url: string, thumbnailUrl?: string | null) => void;
   label?: string;
   disabled?: boolean;
 }
@@ -38,7 +40,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
     try {
       const previousValue = value;
       const response = await apiService.uploadImage(file);
-      onChange(response.url);
+      onChange(response.url, response.thumbnailUrl);
       if (previousValue) {
         // Best-effort cleanup of the now-replaced image; a failed delete
         // here just leaves a harmless orphaned object in storage, not a
@@ -54,7 +56,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
 
   const handleRemove = () => {
     const previousValue = value;
-    onChange('');
+    onChange('', null);
     if (previousValue) {
       apiService.deleteImage(previousValue).catch(() => {});
     }
