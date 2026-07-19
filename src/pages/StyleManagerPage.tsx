@@ -61,6 +61,7 @@ export const StyleManagerPage: React.FC = () => {
   const [styleMinImages, setStyleMinImages] = useState(1);
   const [styleMaxImages, setStyleMaxImages] = useState(1);
   const [styleCoverImage, setStyleCoverImage] = useState('');
+  const [styleCoverImageThumbnail, setStyleCoverImageThumbnail] = useState<string | null>(null);
   const [styleTrending, setStyleTrending] = useState(false);
   const [stylePremium, setStylePremium] = useState(false);
   const [styleEnabled, setStyleEnabled] = useState(true);
@@ -323,6 +324,7 @@ export const StyleManagerPage: React.FC = () => {
     setStyleMinImages(1);
     setStyleMaxImages(1);
     setStyleCoverImage('');
+    setStyleCoverImageThumbnail(null);
     setStyleTrending(false);
     setStylePremium(false);
     setStyleEnabled(true);
@@ -342,6 +344,7 @@ export const StyleManagerPage: React.FC = () => {
     setStyleMinImages(style.minImages || 1);
     setStyleMaxImages(style.maxImages || 1);
     setStyleCoverImage(style.coverImage || '');
+    setStyleCoverImageThumbnail(style.coverImageThumbnail || null);
     setStyleTrending(style.isTrending);
     setStylePremium(style.isPremium);
     setStyleEnabled(style.isEnabled);
@@ -419,6 +422,7 @@ export const StyleManagerPage: React.FC = () => {
       minImages: styleMinImages,
       maxImages: styleMaxImages,
       coverImage: styleCoverImage,
+      coverImageThumbnail: styleCoverImageThumbnail,
       isTrending: styleTrending,
       isPremium: stylePremium,
       isEnabled: styleEnabled,
@@ -1127,7 +1131,10 @@ export const StyleManagerPage: React.FC = () => {
 
           <ImageUploader
             value={styleCoverImage}
-            onChange={setStyleCoverImage}
+            onChange={(url, thumbnailUrl) => {
+              setStyleCoverImage(url);
+              setStyleCoverImageThumbnail(thumbnailUrl ?? null);
+            }}
             label="Style Cover Image"
           />
 

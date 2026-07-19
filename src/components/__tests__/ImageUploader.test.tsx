@@ -50,8 +50,11 @@ describe('ImageUploader', () => {
     expect(apiService.uploadImage).not.toHaveBeenCalled();
   });
 
-  it('uploads a valid image and calls onChange with the resulting URL', async () => {
-    (apiService.uploadImage as any).mockResolvedValue({ url: 'https://cdn.example.com/new.png' });
+  it('uploads a valid image and calls onChange with the resulting URL and thumbnail URL', async () => {
+    (apiService.uploadImage as any).mockResolvedValue({
+      url: 'https://cdn.example.com/new.png',
+      thumbnailUrl: 'https://cdn.example.com/new-thumb.webp',
+    });
     const onChange = vi.fn();
     const { container } = render(<ImageUploader value="" onChange={onChange} />);
 
@@ -59,7 +62,9 @@ describe('ImageUploader', () => {
       target: { files: [makeFile('cover.png', 1000)] },
     });
 
-    await waitFor(() => expect(onChange).toHaveBeenCalledWith('https://cdn.example.com/new.png'));
+    await waitFor(() =>
+      expect(onChange).toHaveBeenCalledWith('https://cdn.example.com/new.png', 'https://cdn.example.com/new-thumb.webp')
+    );
     expect(apiService.deleteImage).not.toHaveBeenCalled(); // no previous image to clean up
   });
 
@@ -68,7 +73,7 @@ describe('ImageUploader', () => {
     render(<ImageUploader value="https://cdn.example.com/old.png" onChange={onChange} />);
 
     fireEvent.click(screen.getByTitle('Remove image'));
-    expect(onChange).toHaveBeenCalledWith('');
+    expect(onChange).toHaveBeenCalledWith('', null);
     expect(apiService.deleteImage).toHaveBeenCalledWith('https://cdn.example.com/old.png');
   });
 });
