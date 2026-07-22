@@ -1,4 +1,4 @@
-import { CategoryModel, StyleModel, StyleCreateInput, StyleField, TagModel, TagCreateInput, AdminStats, AuthResponse, AdminUserSearchResult, CreditPack, CreditPackInput, UsersByCountryStats, CountryStatsRange } from '../types';
+import { CategoryModel, StyleModel, StyleCreateInput, StyleField, TagModel, TagCreateInput, AdminStats, AuthResponse, AdminUserSearchResult, CreditPack, CreditPackInput, UsersByCountryStats, CountryStatsRange, GenerationOverviewStats, GenerationAnalyticsSummary, GenerationAnalyticsRange } from '../types';
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
 
@@ -80,6 +80,19 @@ export const apiService = {
 
   async getUsersByCountry(range: CountryStatsRange): Promise<UsersByCountryStats> {
     return apiCall<UsersByCountryStats>(`/api/admin/stats/countries?range=${range}`);
+  },
+
+  async getGenerationOverview(): Promise<GenerationOverviewStats> {
+    return apiCall<GenerationOverviewStats>('/api/admin/analytics/generation/overview');
+  },
+
+  async getGenerationAnalyticsSummary(
+    range: GenerationAnalyticsRange,
+    minFeedbackCount = 10
+  ): Promise<GenerationAnalyticsSummary> {
+    return apiCall<GenerationAnalyticsSummary>(
+      `/api/admin/analytics/generation/summary?range=${range}&minFeedbackCount=${minFeedbackCount}`
+    );
   },
 
   // Categories

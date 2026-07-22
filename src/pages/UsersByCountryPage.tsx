@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { apiService } from '../services/api';
 import { CountryStat, CountryStatsRange } from '../types';
-import { CountryTimeFilter } from '../components/CountryTimeFilter';
+import { TimeRangeFilter } from '../components/TimeRangeFilter';
 import { CountryWorldMap } from '../components/CountryWorldMap';
 import { CountryPieChart } from '../components/CountryPieChart';
 import { CountryTable } from '../components/CountryTable';
@@ -56,7 +56,7 @@ export const UsersByCountryPage: React.FC = () => {
     <div>
       <div className="panel-title-row">
         <h2>Users by Country</h2>
-        <CountryTimeFilter value={range} onChange={setRange} />
+        <TimeRangeFilter value={range} onChange={setRange} />
       </div>
 
       {isLoading && (
