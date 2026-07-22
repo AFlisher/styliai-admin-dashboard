@@ -14,6 +14,15 @@ export type CountryStatsRange = UsersByCountryStats['range'];
 export type AuthResponse = components['schemas']['AdminAuthResponse'];
 export type AdminUserSearchResult = components['schemas']['AdminUserSearchResult'];
 export type CreditPack = components['schemas']['CreditPack'];
+export type GenerationOverviewStats = components['schemas']['GenerationOverviewStats'];
+export type GenerationAnalyticsSummary = components['schemas']['GenerationAnalyticsSummary'];
+export type GenerationAnalyticsRange = GenerationAnalyticsSummary['range'];
+export type StyleUsageStat = components['schemas']['StyleUsageStat'];
+export type CategoryUsageStat = components['schemas']['CategoryUsageStat'];
+export type StyleRatingStat = components['schemas']['StyleRatingStat'];
+export type RecentFeedbackEntry = components['schemas']['RecentFeedbackEntry'];
+export type FeedbackSummaryStats = components['schemas']['FeedbackSummaryStats'];
+export type GenerationTimeStats = components['schemas']['GenerationTimeStats'];
 
 // The POST /api/styles request body is intentionally its own shape (e.g.
 // sortOrder is optional there, unlike on the StyleModel the API returns) -

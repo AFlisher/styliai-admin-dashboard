@@ -6,11 +6,12 @@ import StyleManagerPage from './pages/StyleManagerPage';
 import UserCreditsPage from './pages/UserCreditsPage';
 import CreditPacksPage from './pages/CreditPacksPage';
 import UsersByCountryPage from './pages/UsersByCountryPage';
+import GenerationAnalyticsPage from './pages/GenerationAnalyticsPage';
 import { Loader } from './components/Loader';
 
 const AppContent: React.FC = () => {
   const { user, isLoading, logout } = useAuth();
-  const [activeTab, setActiveTab] = useState<'analytics' | 'manager' | 'credits' | 'packs' | 'country'>('analytics');
+  const [activeTab, setActiveTab] = useState<'analytics' | 'manager' | 'credits' | 'packs' | 'country' | 'generationAnalytics'>('analytics');
 
   if (isLoading) {
     return <Loader type="page" />;
@@ -66,6 +67,12 @@ const AppContent: React.FC = () => {
             >
               <i className="fa-solid fa-earth-americas"></i> Users by Country
             </button>
+            <button
+              className={`tab-btn ${activeTab === 'generationAnalytics' ? 'active' : ''}`}
+              onClick={() => setActiveTab('generationAnalytics')}
+            >
+              <i className="fa-solid fa-star-half-stroke"></i> Generation Analytics
+            </button>
           </div>
 
           <div className="user-profile-signout">
@@ -85,6 +92,7 @@ const AppContent: React.FC = () => {
         {activeTab === 'credits' && <UserCreditsPage />}
         {activeTab === 'packs' && <CreditPacksPage />}
         {activeTab === 'country' && <UsersByCountryPage />}
+        {activeTab === 'generationAnalytics' && <GenerationAnalyticsPage />}
       </main>
 
       <footer className="admin-footer">

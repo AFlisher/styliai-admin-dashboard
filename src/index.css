@@ -1681,11 +1681,12 @@ tr:hover td {
   }
 }
 
-/* Users by Country analytics */
-.country-time-filter {
+/* Shared Today/7d/30d/All Time filter (Users by Country, Generation Analytics) */
+.time-range-filter {
   padding: 4px;
 }
 
+/* Users by Country analytics */
 .country-stats-grid {
   display: grid;
   grid-template-columns: 3fr 2fr;
@@ -1840,4 +1841,88 @@ tr:hover td {
 
 .country-flag-cell {
   font-size: 18px;
+}
+
+/* Generation Analytics page */
+.analytics-two-col-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+@media (max-width: 968px) {
+  .analytics-two-col-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.hbar-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.hbar-row-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 6px;
+  gap: 12px;
+}
+
+.hbar-row-name {
+  font-size: 13px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hbar-row-meta {
+  font-size: 12px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.hbar-track {
+  width: 100%;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--bg-card-hover);
+  overflow: hidden;
+}
+
+.hbar-fill {
+  height: 100%;
+  border-radius: 4px;
+  background: linear-gradient(to right, var(--accent-purple), var(--accent-pink));
+  transition: width 0.5s ease;
+}
+
+.hbar-fill.rating {
+  background: linear-gradient(to right, var(--warning), #fbbf24);
+}
+
+.rating-summary-header {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.rating-summary-value {
+  font-size: 32px;
+  font-weight: 800;
+}
+
+.rating-summary-stars {
+  color: var(--warning);
+  font-size: 16px;
+}
+
+.rating-summary-count {
+  font-size: 13px;
+  color: var(--text-muted);
 }

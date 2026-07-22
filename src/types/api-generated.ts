@@ -697,6 +697,110 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/analytics/generation/overview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Fixed-window generation overview counters (Total/Today/This Week/This Month generations, Active Users Today/This Month) for the dashboard's Generation Analytics page. */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Overview stats */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["GenerationOverviewStats"];
+                    };
+                };
+                /** @description Missing/invalid admin token */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorMessage"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/analytics/generation/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Range-filtered generation analytics (top styles/categories, highest/lowest rated styles, average generation time, feedback summary, recent feedback), all aggregated in SQL. */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Defaults to allTime. Filters on generation_events.created_at / generation_feedback.created_at. */
+                    range?: "today" | "last7days" | "last30days" | "allTime";
+                    /** @description Minimum feedback count for a style to appear in highestRatedStyles/lowestRatedStyles. Defaults to 10. */
+                    minFeedbackCount?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Generation analytics summary */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["GenerationAnalyticsSummary"];
+                    };
+                };
+                /** @description Invalid range param */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorMessage"];
+                    };
+                };
+                /** @description Missing/invalid admin token */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorMessage"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/admin/users/search": {
         parameters: {
             query?: never;
@@ -1915,6 +2019,64 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/feedback": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Submits post-generation feedback (star rating + optional comment). Never accepts image data. */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["GenerationFeedbackSubmission"];
+                };
+            };
+            responses: {
+                /** @description Feedback recorded */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["GenerationFeedbackResult"];
+                    };
+                };
+                /** @description Validation error */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorCode"];
+                    };
+                };
+                /** @description Missing/invalid user token */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorCode"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/ai/generate": {
         parameters: {
             query?: never;
@@ -2542,6 +2704,113 @@ export interface components {
             generatedImageUrl: string;
             /** Format: uri */
             thumbnailUrl: string | null;
+            /**
+             * Format: uuid
+             * @description The creations row id for this generation, if the best-effort history write succeeded. Round-trip this back on POST /api/feedback.
+             */
+            generationId?: string | null;
+            /**
+             * Format: uuid
+             * @description The generated style's category id, for round-tripping on POST /api/feedback.
+             */
+            categoryId?: string | null;
+            /** @description Server-side AI provider call duration, for round-tripping on POST /api/feedback. */
+            generationTimeMs?: number | null;
+        };
+        /** @description Post-generation feedback. Never includes image data - only ids/metrics/text. */
+        GenerationFeedbackSubmission: {
+            rating: number;
+            comment?: string | null;
+            /** Format: uuid */
+            generationId?: string | null;
+            /** Format: uuid */
+            styleId?: string | null;
+            /** Format: uuid */
+            categoryId?: string | null;
+            generationTimeMs?: number | null;
+            appVersion?: string | null;
+        };
+        GenerationFeedbackResult: {
+            /** Format: uuid */
+            id: string;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        GenerationOverviewStats: {
+            totalGenerations: number;
+            todayGenerations: number;
+            thisWeekGenerations: number;
+            thisMonthGenerations: number;
+            activeUsersToday: number;
+            activeUsersThisMonth: number;
+        };
+        StyleUsageStat: {
+            /** Format: uuid */
+            styleId?: string | null;
+            styleName: string;
+            count: number;
+            percentage: number;
+        };
+        CategoryUsageStat: {
+            /** Format: uuid */
+            categoryId?: string | null;
+            categoryName: string;
+            count: number;
+            percentage: number;
+        };
+        StyleRatingStat: {
+            /** Format: uuid */
+            styleId?: string | null;
+            styleName: string;
+            avgRating: number;
+            feedbackCount: number;
+        };
+        StyleGenerationTimeStat: {
+            /** Format: uuid */
+            styleId?: string | null;
+            styleName: string;
+            avgMs: number;
+        } | null;
+        GenerationTimeStats: {
+            avgMs: number | null;
+            sampleCount: number;
+            fastestStyle: components["schemas"]["StyleGenerationTimeStat"];
+            slowestStyle: components["schemas"]["StyleGenerationTimeStat"];
+        };
+        FeedbackSummaryStats: {
+            avgRating: number | null;
+            totalFeedback: number;
+            /** @description Count of feedback entries per star rating (keys "1".."5"). */
+            distribution: {
+                1?: number;
+                2?: number;
+                3?: number;
+                4?: number;
+                5?: number;
+            };
+        };
+        RecentFeedbackEntry: {
+            /** Format: uuid */
+            id: string;
+            /** Format: email */
+            userEmail: string;
+            styleName: string;
+            rating: number;
+            comment: string | null;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        GenerationAnalyticsSummary: {
+            /** @enum {string} */
+            range: "today" | "last7days" | "last30days" | "allTime";
+            minFeedbackCount: number;
+            topStyles: components["schemas"]["StyleUsageStat"][];
+            topCategories: components["schemas"]["CategoryUsageStat"][];
+            highestRatedStyles: components["schemas"]["StyleRatingStat"][];
+            lowestRatedStyles: components["schemas"]["StyleRatingStat"][];
+            generationTime: components["schemas"]["GenerationTimeStats"];
+            feedbackSummary: components["schemas"]["FeedbackSummaryStats"];
+            recentFeedback: components["schemas"]["RecentFeedbackEntry"][];
         };
         AiGenerateResult: {
             success: boolean;
