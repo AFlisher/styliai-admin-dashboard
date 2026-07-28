@@ -1379,6 +1379,27 @@ tr:hover td {
   margin-top: 10px;
 }
 
+/* SEC-15.2: switch between authenticator code and recovery code. A plain
+   text button rather than a link - it performs no navigation. */
+.login-mfa-toggle {
+  background: none;
+  border: none;
+  padding: 6px 0 0;
+  font-size: 13px;
+  color: var(--text-muted);
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.login-mfa-toggle:hover:not(:disabled) {
+  color: var(--text-main);
+}
+
+.login-mfa-toggle:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 /* Skeleton Loading Screens */
 .skeleton {
   background: var(--bg-card);

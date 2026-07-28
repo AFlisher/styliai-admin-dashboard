@@ -8,6 +8,24 @@ export function setupAuthInterceptor(onLogout: () => void) {
   onAuthFailureCallback = onLogout;
 }
 
+/**
+ * Error carrying the backend's machine-readable `code` alongside its message.
+ *
+ * SEC-15.2: the login flow has to tell "wrong credentials" apart from "correct
+ * credentials, now send your 6-digit code" - both are 401s, and only the `code`
+ * field distinguishes them. Previously every non-2xx collapsed into a bare
+ * Error with just the message, so that distinction was thrown away.
+ */
+export class ApiError extends Error {
+  code?: string;
+
+  constructor(message: string, code?: string) {
+    super(message);
+    this.name = 'ApiError';
+    this.code = code;
+  }
+}
+
 interface ApiCallOptions extends RequestInit {
   // Set for calls that can legitimately 401 without meaning "your session
   // expired" (currently just the login call itself) - skips the global
@@ -47,12 +65,15 @@ async function apiCall<T>(
     if (!skipAuthRedirect && onAuthFailureCallback) {
       onAuthFailureCallback();
     }
-    throw new Error(errorData.message || 'Unauthorized.');
+    throw new ApiError(errorData.message || 'Unauthorized.', errorData.code);
   }
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.message || `Request failed with status ${response.status}`);
+    throw new ApiError(
+      errorData.message || `Request failed with status ${response.status}`,
+      errorData.code
+    );
   }
 
   // For delete requests or empty responses, return empty object/json
@@ -65,10 +86,17 @@ async function apiCall<T>(
 
 export const apiService = {
   // Authentication
-  async login(email: string, password: string): Promise<AuthResponse> {
+  // SEC-15.2: the second factor is sent on this same call rather than exchanged
+  // for an intermediate token, so there is never a partially-authenticated
+  // credential in localStorage. Omitted entirely for accounts without MFA.
+  async login(
+    email: string,
+    password: string,
+    secondFactor?: { totpCode?: string; recoveryCode?: string }
+  ): Promise<AuthResponse> {
     return apiCall<AuthResponse>('/api/admin/login', {
       method: 'POST',
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ email, password, ...secondFactor }),
       skipAuthRedirect: true,
     });
   },

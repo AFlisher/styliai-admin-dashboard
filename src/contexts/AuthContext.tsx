@@ -5,11 +5,18 @@ import { apiService, setupAuthInterceptor } from '../services/api';
 interface AuthContextType {
   user: UserModel | null;
   accessToken: string | null;
-  login: (email: string, password: string) => Promise<void>;
+  login: (
+    email: string,
+    password: string,
+    secondFactor?: { totpCode?: string; recoveryCode?: string }
+  ) => Promise<void>;
   logout: () => void;
   isLoading: boolean;
   error: string | null;
   clearError: () => void;
+  // SEC-15.2: set once the backend confirms the password is correct but the
+  // account needs its second factor. Drives the code field on the login form.
+  mfaRequired: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -19,6 +26,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [mfaRequired, setMfaRequired] = useState<boolean>(false);
 
   const logout = () => {
     localStorage.removeItem('styli_access_token');
@@ -26,20 +34,38 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setAccessToken(null);
     setUser(null);
     setError(null);
+    setMfaRequired(false);
   };
 
-  const login = async (email: string, password: string) => {
+  const login = async (
+    email: string,
+    password: string,
+    secondFactor?: { totpCode?: string; recoveryCode?: string }
+  ) => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await apiService.login(email, password);
+      const response = await apiService.login(email, password, secondFactor);
 
       localStorage.setItem('styli_access_token', response.accessToken);
       localStorage.setItem('styli_admin_user', JSON.stringify(response.user));
       setAccessToken(response.accessToken);
       setUser(response.user);
+      setMfaRequired(false);
     } catch (err: any) {
-      setError(err.message || 'Login failed. Please check your credentials.');
+      // SEC-15.2: MFA_REQUIRED means the password was right and only the second
+      // factor is outstanding - a prompt, not a failure. Anything else is a
+      // real error. MFA_INVALID keeps the field visible so the code can be
+      // retyped without re-entering the password.
+      if (err?.code === 'MFA_REQUIRED') {
+        setMfaRequired(true);
+        setError(null);
+      } else {
+        if (err?.code === 'MFA_INVALID') {
+          setMfaRequired(true);
+        }
+        setError(err.message || 'Login failed. Please check your credentials.');
+      }
       throw err;
     } finally {
       setIsLoading(false);
@@ -82,6 +108,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isLoading,
         error,
         clearError,
+        mfaRequired,
       }}
     >
       {children}
