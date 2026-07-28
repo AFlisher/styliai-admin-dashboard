@@ -2544,6 +2544,11 @@ export interface components {
             fullName: string;
             /** @enum {string} */
             role: "admin";
+            /**
+             * @description SEC-15.4 authorization tier. Returned so the dashboard can hide tabs the role cannot use; it is presentational only, since every request is re-authorized server-side from the equivalent JWT claim.
+             * @enum {string}
+             */
+            adminRole: "viewer" | "editor" | "superadmin";
         };
         /** @description Admin login has no refresh token today (Roadmap Item 2.4b notes this as a fixed 12h session with no rotation). */
         AdminAuthResponse: {
