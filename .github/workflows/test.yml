@@ -1,0 +1,54 @@
+# Sprint 3 / H-4 — run the tests.
+#
+# The only workflow in this repository was a secret scan, so 127 tests and the
+# TypeScript build gated nothing. This dashboard deploys to Vercel on push, and
+# `npm run build` is `tsc && vite build` - meaning a type error is caught by the
+# deploy rather than before it.
+name: Tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: vitest + build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Install
+        run: npm ci
+
+      - name: Test
+        run: npm test
+
+      # `npm run build` is `tsc && vite build`, so this is the type check as
+      # well as the bundle. Running it here is what stops a type error being
+      # discovered by a failed production deploy.
+      - name: Build
+        run: npm run build
+
+      # The dashboard's API types are generated from the backend's openapi.yaml
+      # (`npm run generate:api-types`). That file lives in a sibling repository
+      # which is not checked out here, so the generator cannot run in CI -
+      # asserting the committed types are in sync would need a second checkout
+      # and a cross-repo pin. Recorded rather than silently skipped: the types
+      # can drift from the backend contract and nothing here will notice.
+      - name: Note the one thing this does not check
+        run: echo "API types are generated from ../backend/openapi.yaml and are NOT verified here."
