@@ -1,4 +1,5 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useId } from 'react';
+import { IconButton } from './IconButton';
 
 interface ModalProps {
   title: string;
@@ -15,6 +16,8 @@ export const Modal: React.FC<ModalProps> = ({
   children,
   size = 'medium',
 }) => {
+  const titleId = useId();
+
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -32,13 +35,14 @@ export const Modal: React.FC<ModalProps> = ({
     <div className="modal-overlay" onClick={onClose}>
       <div
         className={`modal modal-${size}`}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="modal-header-container">
-          <h3 className="modal-header">{title}</h3>
-          <button className="modal-close-btn" onClick={onClose} aria-label="Close modal">
-            <i className="fa-solid fa-xmark"></i>
-          </button>
+          <h3 className="modal-header" id={titleId}>{title}</h3>
+          <IconButton variant="modal-close-btn" icon="fa-solid fa-xmark" label="Close modal" onClick={onClose} />
         </div>
         <div className="modal-content">
           {children}

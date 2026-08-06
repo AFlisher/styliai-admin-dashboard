@@ -59,7 +59,7 @@ export const LoginPage: React.FC = () => {
         </div>
 
         {activeError && (
-          <div className="login-error-alert">
+          <div className="login-error-alert" role="alert">
             <i className="fa-solid fa-triangle-exclamation"></i>
             <span>{activeError}</span>
           </div>

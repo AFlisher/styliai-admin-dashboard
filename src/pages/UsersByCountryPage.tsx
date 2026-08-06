@@ -5,6 +5,8 @@ import { TimeRangeFilter } from '../components/TimeRangeFilter';
 import { CountryWorldMap } from '../components/CountryWorldMap';
 import { CountryPieChart } from '../components/CountryPieChart';
 import { CountryTable } from '../components/CountryTable';
+import { EmptyState } from '../components/EmptyState';
+import { TwoColumnLayout } from '../components/TwoColumnLayout';
 
 export const UsersByCountryPage: React.FC = () => {
   const [range, setRange] = useState<CountryStatsRange>('allTime');
@@ -61,39 +63,40 @@ export const UsersByCountryPage: React.FC = () => {
 
       {isLoading && (
         <div className="analytics-loading-view">
-          <div className="country-stats-grid">
+          <TwoColumnLayout ratio="3-2">
             <div className="panel skeleton pulse" style={{ height: '360px' }}></div>
             <div className="panel skeleton pulse" style={{ height: '360px' }}></div>
-          </div>
+          </TwoColumnLayout>
           <div className="panel skeleton pulse" style={{ height: '280px', marginTop: '24px' }}></div>
         </div>
       )}
 
       {!isLoading && error && (
-        <div className="error-panel">
-          <i className="fa-solid fa-triangle-exclamation error-icon"></i>
-          <h3>Unable to Load Country Analytics</h3>
-          <p>{error}</p>
-          <button className="btn" onClick={handleRetry}>
-            <i className="fa-solid fa-rotate-right"></i> Try Again
-          </button>
-        </div>
+        <EmptyState
+          tone="error"
+          icon="fa-solid fa-triangle-exclamation"
+          title="Unable to Load Country Analytics"
+          message={error}
+          actionLabel="Try Again"
+          actionIcon="fa-solid fa-rotate-right"
+          onAction={handleRetry}
+        />
       )}
 
       {!isLoading && !error && countries && countries.length === 0 && (
-        <div className="empty-panel">
-          <i className="fa-solid fa-earth-americas empty-icon"></i>
-          <h3>No Country Data Yet</h3>
-          <p>No users with a resolved country were found for this time range.</p>
-          <button className="btn" onClick={handleRetry}>
-            <i className="fa-solid fa-rotate-right"></i> Refresh
-          </button>
-        </div>
+        <EmptyState
+          icon="fa-solid fa-earth-americas"
+          title="No Country Data Yet"
+          message="No users with a resolved country were found for this time range."
+          actionLabel="Refresh"
+          actionIcon="fa-solid fa-rotate-right"
+          onAction={handleRetry}
+        />
       )}
 
       {!isLoading && !error && countries && countries.length > 0 && (
         <>
-          <div className="country-stats-grid">
+          <TwoColumnLayout ratio="3-2">
             <div className="panel world-map-panel">
               <h3 className="panel-title">World Map</h3>
               <CountryWorldMap countries={countries} />
@@ -102,7 +105,7 @@ export const UsersByCountryPage: React.FC = () => {
               <h3 className="panel-title">Distribution by Country</h3>
               <CountryPieChart countries={countries} />
             </div>
-          </div>
+          </TwoColumnLayout>
 
           <div className="panel" style={{ marginTop: '24px' }}>
             <h3 className="panel-title">Top Countries ({totalUsers.toLocaleString()} users)</h3>

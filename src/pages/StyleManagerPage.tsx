@@ -7,6 +7,10 @@ import { ImageUploader } from '../components/ImageUploader';
 import { TagInput } from '../components/TagInput';
 import { FieldsEditor } from '../components/FieldsEditor';
 import { PromptPreview } from '../components/PromptPreview';
+import { Badge } from '../components/Badge';
+import { IconButton } from '../components/IconButton';
+import { EmptyState } from '../components/EmptyState';
+import { TwoColumnLayout } from '../components/TwoColumnLayout';
 
 export const StyleManagerPage: React.FC = () => {
   // Main Lists State
@@ -669,9 +673,10 @@ export const StyleManagerPage: React.FC = () => {
   const activeCategoryObject = categories.find((c) => c.id === selectedCategoryId);
 
   return (
-    <div className="preset-manager">
-      {/* Category Panel */}
-      <div className="category-panel">
+    <>
+      <TwoColumnLayout ratio="sidebar" gapWide>
+        {/* Category Panel */}
+        <div className="category-panel">
         <div className="panel-header-with-action">
           <h3 className="panel-title">Categories</h3>
           <button className="icon-btn-text" onClick={handleOpenAddCategory} title="Add Category">
@@ -680,13 +685,13 @@ export const StyleManagerPage: React.FC = () => {
         </div>
 
         {categoriesError && (
-          <div className="panel-error-alert">{categoriesError}</div>
+          <div className="panel-error-alert" role="alert">{categoriesError}</div>
         )}
 
         {isCategoriesLoading ? (
           <Loader type="skeleton-list" count={5} />
         ) : categories.length === 0 ? (
-          <div className="empty-state-sidebar">No categories.</div>
+          <EmptyState variant="inline" compact message="No categories." />
         ) : (
           <div className="category-list">
             {categories.map((c, index) => (
@@ -699,9 +704,19 @@ export const StyleManagerPage: React.FC = () => {
                 className={`category-item-draggable category-item ${
                   selectedCategoryId === c.id ? 'active' : ''
                 } ${!c.isEnabled ? 'disabled-cat' : ''}`}
+                role="button"
+                tabIndex={0}
+                aria-pressed={selectedCategoryId === c.id}
                 onClick={() => {
                   setSelectedCategoryId(c.id);
                   setFilterCategory('all'); // reset general dropdown when clicking sidebar
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    setSelectedCategoryId(c.id);
+                    setFilterCategory('all');
+                  }
                 }}
               >
                 <div className="category-drag-handle">
@@ -709,26 +724,25 @@ export const StyleManagerPage: React.FC = () => {
                 </div>
                 <span className="category-label-text">{c.name}</span>
                 <div className="category-action-buttons">
-                  <button
-                    className="category-inline-btn"
+                  <IconButton
+                    variant="category-inline-btn"
+                    icon="fa-solid fa-pen"
+                    label="Edit Category"
                     onClick={(e) => {
                       e.stopPropagation();
                       handleOpenEditCategory(c);
                     }}
-                    title="Edit Category"
-                  >
-                    <i className="fa-solid fa-pen"></i>
-                  </button>
-                  <button
-                    className="category-inline-btn delete"
+                  />
+                  <IconButton
+                    variant="category-inline-btn"
+                    danger
+                    icon="fa-solid fa-trash-can"
+                    label="Delete Category"
                     onClick={(e) => {
                       e.stopPropagation();
                       handleDeleteCategory(c.id);
                     }}
-                    title="Delete Category"
-                  >
-                    <i className="fa-solid fa-trash-can"></i>
-                  </button>
+                  />
                 </div>
               </div>
             ))}
@@ -743,9 +757,9 @@ export const StyleManagerPage: React.FC = () => {
             <h2>
               {activeCategoryObject ? activeCategoryObject.name : 'Choose Category'}
               {activeCategoryObject && !activeCategoryObject.isEnabled && (
-                <span className="badge success" style={{ marginLeft: '12px', background: '#3f3f46', color: '#a1a1aa' }}>
+                <Badge tone="success" style={{ marginLeft: '12px', background: '#3f3f46', color: '#a1a1aa' }}>
                   Archived/Disabled
-                </span>
+                </Badge>
               )}
             </h2>
           </div>
@@ -818,20 +832,21 @@ export const StyleManagerPage: React.FC = () => {
           </div>
         </div>
 
-        {actionError && <div className="action-error-bar">{actionError}</div>}
+        {actionError && <div className="action-error-bar" role="alert">{actionError}</div>}
 
-        {stylesError && <div className="panel-error-alert">{stylesError}</div>}
+        {stylesError && <div className="panel-error-alert" role="alert">{stylesError}</div>}
 
         {isStylesLoading ? (
           <div className="presets-grid">
             <Loader type="skeleton-card" count={3} />
           </div>
         ) : filteredAndSortedStyles.length === 0 ? (
-          <div className="empty-panel-styles">
-            <i className="fa-regular fa-image empty-icon"></i>
-            <h3>No Styles Found</h3>
-            <p>Modify filters or click "Add Style Preset" to create one.</p>
-          </div>
+          <EmptyState
+            dashed
+            icon="fa-regular fa-image"
+            title="No Styles Found"
+            message='Modify filters or click "Add Style Preset" to create one.'
+          />
         ) : (
           <div className="presets-grid">
             {filteredAndSortedStyles.map((style) => (
@@ -850,63 +865,65 @@ export const StyleManagerPage: React.FC = () => {
                       alt={style.name}
                       className="preset-img preset-img-clickable"
                       loading="lazy"
+                      role="button"
+                      tabIndex={0}
+                      aria-label={`View larger image of ${style.name}`}
                       onClick={() => setActivePreviewImage(style.coverImage)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          setActivePreviewImage(style.coverImage);
+                        }
+                      }}
                     />
                   ) : (
                     <div className="preset-no-img">No Cover Image</div>
                   )}
 
                   <div className="preset-badge-row-top">
-                    {style.isTrending && <span className="preset-badge-trending">Trending</span>}
-                    {style.isPremium && <span className="preset-badge-pro">Premium</span>}
-                    {!style.isEnabled && (
-                      <span className="preset-badge-disabled">Disabled</span>
-                    )}
+                    {style.isTrending && <Badge tone="trending">Trending</Badge>}
+                    {style.isPremium && <Badge tone="pro">Premium</Badge>}
+                    {!style.isEnabled && <Badge tone="disabled">Disabled</Badge>}
                   </div>
 
                   {/* Actions overlay */}
                   <div className="preset-actions-overlay">
-                    <button
-                      className="icon-btn"
-                      title={style.isTrending ? 'Remove Trending Star' : 'Mark as Trending'}
+                    <IconButton
+                      variant="icon-btn"
+                      icon="fa-solid fa-star"
+                      iconStyle={{ color: style.isTrending ? '#fbbf24' : 'white' }}
+                      label={style.isTrending ? 'Remove Trending Star' : 'Mark as Trending'}
                       onClick={() => handleToggleStyleTrending(style)}
-                    >
-                      <i className="fa-solid fa-star" style={{ color: style.isTrending ? '#fbbf24' : 'white' }}></i>
-                    </button>
-                    <button
-                      className="icon-btn"
-                      title={style.isEnabled ? 'Disable Style' : 'Enable Style'}
+                    />
+                    <IconButton
+                      variant="icon-btn"
+                      icon={style.isEnabled ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash'}
+                      iconStyle={{ color: style.isEnabled ? 'var(--success)' : 'var(--text-muted)' }}
+                      label={style.isEnabled ? 'Disable Style' : 'Enable Style'}
                       onClick={() => handleToggleStyleEnabled(style)}
-                    >
-                      {style.isEnabled ? (
-                        <i className="fa-solid fa-eye" style={{ color: 'var(--success)' }}></i>
-                      ) : (
-                        <i className="fa-solid fa-eye-slash" style={{ color: 'var(--text-muted)' }}></i>
-                      )}
-                    </button>
-                    <button
-                      className="icon-btn"
-                      title="Edit Preset Settings"
+                    />
+                    <IconButton
+                      variant="icon-btn"
+                      icon="fa-solid fa-pen-to-square"
+                      label="Edit Preset Settings"
                       onClick={() => handleOpenEditStyle(style)}
-                    >
-                      <i className="fa-solid fa-pen-to-square"></i>
-                    </button>
-                    <button
-                      className="icon-btn delete"
-                      title="Archive/Delete Preset"
+                    />
+                    <IconButton
+                      variant="icon-btn"
+                      danger
+                      icon="fa-solid fa-trash-can"
+                      label="Archive/Delete Preset"
                       onClick={() => handleDeleteStyle(style.id)}
-                    >
-                      <i className="fa-solid fa-trash-can"></i>
-                    </button>
+                    />
                   </div>
                 </div>
 
                 <div className="preset-info">
                   <div className="preset-header-row">
                     <h4 className="preset-name">{style.name}</h4>
-                    <span className="credits-badge">
-                      <i className="fa-solid fa-coins"></i> {style.creditCost} credits
-                    </span>
+                    <Badge tone="credits" icon="fa-solid fa-coins">
+                      {style.creditCost} credits
+                    </Badge>
                   </div>
 
                   <div className="preset-prompt-box">
@@ -935,6 +952,7 @@ export const StyleManagerPage: React.FC = () => {
           </div>
         )}
       </div>
+      </TwoColumnLayout>
 
       {/* --- Category Modal --- */}
       <Modal
@@ -967,7 +985,7 @@ export const StyleManagerPage: React.FC = () => {
             <label htmlFor="category-enabled-chk">Enable Category (Visible in Mobile App)</label>
           </div>
 
-          {actionError && <div className="modal-error">{actionError}</div>}
+          {actionError && <div className="modal-error" role="alert">{actionError}</div>}
 
           <div className="modal-actions">
             <button className="btn secondary" onClick={() => setShowCategoryModal(false)}>
@@ -1007,7 +1025,7 @@ export const StyleManagerPage: React.FC = () => {
 
           <div className="tag-manager-list">
             {tags.length === 0 ? (
-              <div className="empty-state-sidebar">No tags yet.</div>
+              <EmptyState variant="inline" compact message="No tags yet." />
             ) : (
               tags.map((tag) =>
                 editingTagId === tag.id ? (
@@ -1026,12 +1044,13 @@ export const StyleManagerPage: React.FC = () => {
                       />
                       <label htmlFor={`tag-enabled-${tag.id}`}>Enabled</label>
                     </div>
-                    <button className="icon-btn-text" onClick={handleSaveEditTag} title="Save">
-                      <i className="fa-solid fa-check"></i>
-                    </button>
-                    <button className="icon-btn-text" onClick={() => setEditingTagId(null)} title="Cancel">
-                      <i className="fa-solid fa-xmark"></i>
-                    </button>
+                    <IconButton variant="icon-btn-text" icon="fa-solid fa-check" label="Save" onClick={handleSaveEditTag} />
+                    <IconButton
+                      variant="icon-btn-text"
+                      icon="fa-solid fa-xmark"
+                      label="Cancel"
+                      onClick={() => setEditingTagId(null)}
+                    />
                   </div>
                 ) : (
                   <div key={tag.id} className="tag-manager-row">
@@ -1039,19 +1058,25 @@ export const StyleManagerPage: React.FC = () => {
                       {tag.name}
                       {!tag.isEnabled && ' (disabled)'}
                     </span>
-                    <button className="icon-btn-text" onClick={() => handleStartEditTag(tag)} title="Edit">
-                      <i className="fa-solid fa-pen"></i>
-                    </button>
-                    <button className="icon-btn-text" onClick={() => handleDeleteTag(tag.id)} title="Delete">
-                      <i className="fa-solid fa-trash-can"></i>
-                    </button>
+                    <IconButton
+                      variant="icon-btn-text"
+                      icon="fa-solid fa-pen"
+                      label="Edit"
+                      onClick={() => handleStartEditTag(tag)}
+                    />
+                    <IconButton
+                      variant="icon-btn-text"
+                      icon="fa-solid fa-trash-can"
+                      label="Delete"
+                      onClick={() => handleDeleteTag(tag.id)}
+                    />
                   </div>
                 )
               )
             )}
           </div>
 
-          {tagManagerError && <div className="modal-error">{tagManagerError}</div>}
+          {tagManagerError && <div className="modal-error" role="alert">{tagManagerError}</div>}
 
           <div className="modal-actions">
             <button className="btn secondary" onClick={() => setShowTagManagerModal(false)}>
@@ -1212,7 +1237,7 @@ export const StyleManagerPage: React.FC = () => {
             </div>
           </div>
 
-          {actionError && <div className="modal-error">{actionError}</div>}
+          {actionError && <div className="modal-error" role="alert">{actionError}</div>}
 
           <div className="modal-actions">
             {editingStyle && (
@@ -1271,9 +1296,12 @@ export const StyleManagerPage: React.FC = () => {
               {previewSampleImage ? (
                 <div className="preview-sample-box">
                   <img src={previewSampleImage} alt="Sample Source" />
-                  <button className="remove-sample-btn" onClick={() => { setPreviewSampleImage(''); setPreviewFile(null); }}>
-                    <i className="fa-solid fa-xmark"></i>
-                  </button>
+                  <IconButton
+                    variant="remove-sample-btn"
+                    icon="fa-solid fa-xmark"
+                    label="Remove sample photo"
+                    onClick={() => { setPreviewSampleImage(''); setPreviewFile(null); }}
+                  />
                 </div>
               ) : (
                 <div className="sample-photo-dropzone">
@@ -1316,7 +1344,7 @@ export const StyleManagerPage: React.FC = () => {
             />
           </div>
 
-          {previewError && <div className="modal-error">{previewError}</div>}
+          {previewError && <div className="modal-error" role="alert">{previewError}</div>}
 
           <div className="modal-actions" style={{ marginTop: '20px' }}>
             <button className="btn secondary" onClick={() => setShowPreviewModal(false)}>
@@ -1363,14 +1391,17 @@ export const StyleManagerPage: React.FC = () => {
       {activePreviewImage && (
         <div className="image-preview-overlay" onClick={() => setActivePreviewImage(null)}>
           <div className="image-preview-modal-content" onClick={(e) => e.stopPropagation()}>
-            <button className="image-preview-close-btn" onClick={() => setActivePreviewImage(null)} aria-label="Close preview">
-              <i className="fa-solid fa-xmark"></i>
-            </button>
+            <IconButton
+              variant="image-preview-close-btn"
+              icon="fa-solid fa-xmark"
+              label="Close preview"
+              onClick={() => setActivePreviewImage(null)}
+            />
             <img src={activePreviewImage} alt="Full Preview" className="image-preview-large-img" />
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 };
 

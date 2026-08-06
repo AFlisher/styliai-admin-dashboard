@@ -3,6 +3,8 @@ import { apiService } from '../services/api';
 import { CreditPack } from '../types';
 import { Modal } from '../components/Modal';
 import { Loader } from '../components/Loader';
+import { Badge } from '../components/Badge';
+import { EmptyState } from '../components/EmptyState';
 
 export const CreditPacksPage: React.FC = () => {
   const [packs, setPacks] = useState<CreditPack[]>([]);
@@ -146,19 +148,14 @@ export const CreditPacksPage: React.FC = () => {
           every pack until real App Store / Google Play products are configured (Roadmap Item 4.1).
         </p>
 
-        {actionError && <div className="panel-error-alert">{actionError}</div>}
+        {actionError && <div className="panel-error-alert" role="alert">{actionError}</div>}
 
         {isLoading ? (
           <Loader type="skeleton-list" count={3} />
         ) : loadError ? (
-          <div className="error-panel">
-            <p>{loadError}</p>
-            <button className="btn" onClick={fetchPacks}>Retry</button>
-          </div>
+          <EmptyState tone="error" message={loadError} actionLabel="Retry" onAction={fetchPacks} />
         ) : packs.length === 0 ? (
-          <div className="empty-panel">
-            <p>No credit packs yet.</p>
-          </div>
+          <EmptyState message="No credit packs yet." />
         ) : (
           <div className="form-layout">
             {packs.map((pack) => (
@@ -176,8 +173,8 @@ export const CreditPacksPage: React.FC = () => {
               >
                 <div>
                   <strong>{pack.name}</strong> — {pack.credits} credits for {pack.priceDisplay}
-                  {pack.badge && <span className="badge purple" style={{ marginLeft: '8px' }}>{pack.badge}</span>}
-                  {!pack.isEnabled && <span className="badge" style={{ marginLeft: '8px' }}>Disabled</span>}
+                  {pack.badge && <Badge tone="purple" style={{ marginLeft: '8px' }}>{pack.badge}</Badge>}
+                  {!pack.isEnabled && <Badge tone="neutral" style={{ marginLeft: '8px' }}>Disabled</Badge>}
                   {pack.description && (
                     <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>
                       {pack.description}
@@ -244,7 +241,7 @@ export const CreditPacksPage: React.FC = () => {
             <label htmlFor="pack-enabled-chk">Enabled (visible in the mobile app)</label>
           </div>
 
-          {actionError && <div className="modal-error">{actionError}</div>}
+          {actionError && <div className="modal-error" role="alert">{actionError}</div>}
 
           <div className="modal-actions">
             <button className="btn secondary" onClick={() => setShowModal(false)}>Cancel</button>

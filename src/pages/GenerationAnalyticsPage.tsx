@@ -4,6 +4,8 @@ import { GenerationOverviewStats, GenerationAnalyticsSummary, GenerationAnalytic
 import { TimeRangeFilter } from '../components/TimeRangeFilter';
 import { UsageStatBarList, UsageStatBarRow } from '../components/UsageStatBarList';
 import { RatingDistributionChart } from '../components/RatingDistributionChart';
+import { EmptyState } from '../components/EmptyState';
+import { TwoColumnLayout } from '../components/TwoColumnLayout';
 
 function formatMs(ms: number | null | undefined): string {
   if (ms == null) return '—';
@@ -107,14 +109,15 @@ export const GenerationAnalyticsPage: React.FC = () => {
       )}
 
       {!overviewLoading && overviewError && (
-        <div className="error-panel">
-          <i className="fa-solid fa-triangle-exclamation error-icon"></i>
-          <h3>Unable to Load Overview</h3>
-          <p>{overviewError}</p>
-          <button className="btn" onClick={handleRetryOverview}>
-            <i className="fa-solid fa-rotate-right"></i> Try Again
-          </button>
-        </div>
+        <EmptyState
+          tone="error"
+          icon="fa-solid fa-triangle-exclamation"
+          title="Unable to Load Overview"
+          message={overviewError}
+          actionLabel="Try Again"
+          actionIcon="fa-solid fa-rotate-right"
+          onAction={handleRetryOverview}
+        />
       )}
 
       {!overviewLoading && !overviewError && overview && (
@@ -177,36 +180,37 @@ export const GenerationAnalyticsPage: React.FC = () => {
 
       {summaryLoading && (
         <div className="analytics-loading-view">
-          <div className="analytics-two-col-grid">
+          <TwoColumnLayout ratio="1-1" style={{ marginBottom: '24px' }}>
             <div className="panel skeleton pulse" style={{ height: '300px' }}></div>
             <div className="panel skeleton pulse" style={{ height: '300px' }}></div>
-          </div>
-          <div className="analytics-two-col-grid">
+          </TwoColumnLayout>
+          <TwoColumnLayout ratio="1-1" style={{ marginBottom: '24px' }}>
             <div className="panel skeleton pulse" style={{ height: '260px' }}></div>
             <div className="panel skeleton pulse" style={{ height: '260px' }}></div>
-          </div>
+          </TwoColumnLayout>
           <div className="panel skeleton pulse" style={{ height: '300px' }}></div>
         </div>
       )}
 
       {!summaryLoading && summaryError && (
-        <div className="error-panel">
-          <i className="fa-solid fa-triangle-exclamation error-icon"></i>
-          <h3>Unable to Load Generation Analytics</h3>
-          <p>{summaryError}</p>
-          <button className="btn" onClick={handleRetrySummary}>
-            <i className="fa-solid fa-rotate-right"></i> Try Again
-          </button>
-        </div>
+        <EmptyState
+          tone="error"
+          icon="fa-solid fa-triangle-exclamation"
+          title="Unable to Load Generation Analytics"
+          message={summaryError}
+          actionLabel="Try Again"
+          actionIcon="fa-solid fa-rotate-right"
+          onAction={handleRetrySummary}
+        />
       )}
 
       {!summaryLoading && !summaryError && summary && (
         <>
-          <div className="analytics-two-col-grid">
+          <TwoColumnLayout ratio="1-1" style={{ marginBottom: '24px' }}>
             <div className="panel">
               <h3 className="panel-title">Most Used Styles</h3>
               {topStyleRows.length === 0 ? (
-                <div className="chart-empty">No style generations in this range.</div>
+                <EmptyState variant="inline" message="No style generations in this range." />
               ) : (
                 <UsageStatBarList rows={topStyleRows} />
               )}
@@ -214,26 +218,26 @@ export const GenerationAnalyticsPage: React.FC = () => {
             <div className="panel">
               <h3 className="panel-title">Most Used Categories</h3>
               {topCategoryRows.length === 0 ? (
-                <div className="chart-empty">No category generations in this range.</div>
+                <EmptyState variant="inline" message="No category generations in this range." />
               ) : (
                 <UsageStatBarList rows={topCategoryRows} />
               )}
             </div>
-          </div>
+          </TwoColumnLayout>
 
-          <div className="analytics-two-col-grid">
+          <TwoColumnLayout ratio="1-1" style={{ marginBottom: '24px' }}>
             <div className="panel">
               <h3 className="panel-title">Highest Rated Styles</h3>
               {summary.highestRatedStyles.length === 0 ? (
-                <div className="table-empty">No styles have at least {summary.minFeedbackCount} ratings yet.</div>
+                <EmptyState variant="inline" message={`No styles have at least ${summary.minFeedbackCount} ratings yet.`} />
               ) : (
                 <div className="table-container">
                   <table>
                     <thead>
                       <tr>
-                        <th>Style</th>
-                        <th>Avg Rating</th>
-                        <th>Feedback Count</th>
+                        <th scope="col">Style</th>
+                        <th scope="col">Avg Rating</th>
+                        <th scope="col">Feedback Count</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -252,15 +256,15 @@ export const GenerationAnalyticsPage: React.FC = () => {
             <div className="panel">
               <h3 className="panel-title">Lowest Rated Styles</h3>
               {summary.lowestRatedStyles.length === 0 ? (
-                <div className="table-empty">No styles have at least {summary.minFeedbackCount} ratings yet.</div>
+                <EmptyState variant="inline" message={`No styles have at least ${summary.minFeedbackCount} ratings yet.`} />
               ) : (
                 <div className="table-container">
                   <table>
                     <thead>
                       <tr>
-                        <th>Style</th>
-                        <th>Avg Rating</th>
-                        <th>Feedback Count</th>
+                        <th scope="col">Style</th>
+                        <th scope="col">Avg Rating</th>
+                        <th scope="col">Feedback Count</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -276,9 +280,9 @@ export const GenerationAnalyticsPage: React.FC = () => {
                 </div>
               )}
             </div>
-          </div>
+          </TwoColumnLayout>
 
-          <div className="analytics-two-col-grid">
+          <TwoColumnLayout ratio="1-1" style={{ marginBottom: '24px' }}>
             <div className="panel">
               <h3 className="panel-title">Average Generation Time</h3>
               <div className="stats-grid">
@@ -313,22 +317,22 @@ export const GenerationAnalyticsPage: React.FC = () => {
               <h3 className="panel-title">Feedback Summary</h3>
               <RatingDistributionChart summary={summary.feedbackSummary} />
             </div>
-          </div>
+          </TwoColumnLayout>
 
           <div className="panel">
             <h3 className="panel-title">Recent Feedback</h3>
             {summary.recentFeedback.length === 0 ? (
-              <div className="table-empty">No feedback submitted in this range yet.</div>
+              <EmptyState variant="inline" message="No feedback submitted in this range yet." />
             ) : (
               <div className="table-container">
                 <table>
                   <thead>
                     <tr>
-                      <th>User</th>
-                      <th>Style</th>
-                      <th>Rating</th>
-                      <th>Comment</th>
-                      <th>Date</th>
+                      <th scope="col">User</th>
+                      <th scope="col">Style</th>
+                      <th scope="col">Rating</th>
+                      <th scope="col">Comment</th>
+                      <th scope="col">Date</th>
                     </tr>
                   </thead>
                   <tbody>

@@ -60,7 +60,7 @@ describe('superadmin', () => {
     render(<App />);
 
     for (const tab of ALL_TABS) {
-      expect(await screen.findByRole('button', { name: tab })).toBeInTheDocument();
+      expect(await screen.findByRole('tab', { name: tab })).toBeInTheDocument();
     }
   });
 });
@@ -70,17 +70,17 @@ describe('editor', () => {
     signInAs('editor');
     render(<App />);
 
-    expect(await screen.findByRole('button', { name: /style manager/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /^analytics$/i })).toBeInTheDocument();
+    expect(await screen.findByRole('tab', { name: /style manager/i })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /^analytics$/i })).toBeInTheDocument();
   });
 
   it('does not see money or pricing tabs', async () => {
     signInAs('editor');
     render(<App />);
 
-    await screen.findByRole('button', { name: /style manager/i });
-    expect(screen.queryByRole('button', { name: /^credits$/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /credit packs/i })).not.toBeInTheDocument();
+    await screen.findByRole('tab', { name: /style manager/i });
+    expect(screen.queryByRole('tab', { name: /^credits$/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('tab', { name: /credit packs/i })).not.toBeInTheDocument();
   });
 });
 
@@ -89,12 +89,12 @@ describe('viewer', () => {
     signInAs('viewer');
     render(<App />);
 
-    expect(await screen.findByRole('button', { name: /^analytics$/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /users by country/i })).toBeInTheDocument();
+    expect(await screen.findByRole('tab', { name: /^analytics$/i })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /users by country/i })).toBeInTheDocument();
 
-    expect(screen.queryByRole('button', { name: /style manager/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /^credits$/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /credit packs/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('tab', { name: /style manager/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('tab', { name: /^credits$/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('tab', { name: /credit packs/i })).not.toBeInTheDocument();
   });
 });
 
@@ -111,7 +111,7 @@ describe('a session that predates roles', () => {
     );
 
     for (const tab of ALL_TABS) {
-      expect(screen.queryByRole('button', { name: tab })).not.toBeInTheDocument();
+      expect(screen.queryByRole('tab', { name: tab })).not.toBeInTheDocument();
     }
   });
 

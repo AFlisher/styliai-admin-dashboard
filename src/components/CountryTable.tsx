@@ -12,11 +12,11 @@ export const CountryTable: React.FC<CountryTableProps> = React.memo(({ countries
       <table>
         <thead>
           <tr>
-            <th>Rank</th>
-            <th>Country</th>
-            <th>Flag</th>
-            <th>Users</th>
-            <th>Percentage</th>
+            <th scope="col">Rank</th>
+            <th scope="col">Country</th>
+            <th scope="col">Flag</th>
+            <th scope="col">Users</th>
+            <th scope="col">Percentage</th>
           </tr>
         </thead>
         <tbody>

@@ -1,17 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { apiService } from '../services/api';
 import { AdminStats } from '../types';
+import { Badge, BadgeTone } from '../components/Badge';
+import { EmptyState } from '../components/EmptyState';
+import { TwoColumnLayout } from '../components/TwoColumnLayout';
 
-function badgeClassForType(type: string): string {
+function badgeToneForType(type: string): BadgeTone {
   switch (type) {
     case 'generation':
-      return 'badge purple';
+      return 'purple';
     case 'reward':
-      return 'badge success';
+      return 'success';
     case 'purchase':
-      return 'badge blue';
+      return 'blue';
     default:
-      return 'badge';
+      return 'neutral';
   }
 }
 
@@ -45,37 +48,38 @@ export const AnalyticsPage: React.FC = () => {
             <div key={idx} className="stat-card skeleton pulse" style={{ height: '140px' }}></div>
           ))}
         </div>
-        <div className="chart-section" style={{ marginTop: '24px' }}>
+        <TwoColumnLayout ratio="2-1" style={{ marginTop: '24px' }}>
           <div className="panel skeleton pulse" style={{ height: '300px' }}></div>
           <div className="panel skeleton pulse" style={{ height: '300px' }}></div>
-        </div>
+        </TwoColumnLayout>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="error-panel">
-        <i className="fa-solid fa-triangle-exclamation error-icon"></i>
-        <h3>Unable to Load Analytics</h3>
-        <p>{error}</p>
-        <button className="btn" onClick={fetchStats}>
-          <i className="fa-solid fa-rotate-right"></i> Try Again
-        </button>
-      </div>
+      <EmptyState
+        tone="error"
+        icon="fa-solid fa-triangle-exclamation"
+        title="Unable to Load Analytics"
+        message={error}
+        actionLabel="Try Again"
+        actionIcon="fa-solid fa-rotate-right"
+        onAction={fetchStats}
+      />
     );
   }
 
   if (!stats) {
     return (
-      <div className="empty-panel">
-        <i className="fa-regular fa-folder-open empty-icon"></i>
-        <h3>No Analytics Data</h3>
-        <p>No statistics are currently available for this platform.</p>
-        <button className="btn" onClick={fetchStats}>
-          <i className="fa-solid fa-rotate-right"></i> Refresh
-        </button>
-      </div>
+      <EmptyState
+        icon="fa-regular fa-folder-open"
+        title="No Analytics Data"
+        message="No statistics are currently available for this platform."
+        actionLabel="Refresh"
+        actionIcon="fa-solid fa-rotate-right"
+        onAction={fetchStats}
+      />
     );
   }
 
@@ -132,11 +136,11 @@ export const AnalyticsPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="chart-section">
+      <TwoColumnLayout ratio="2-1">
         <div className="panel">
           <h3 className="panel-title">Daily Style Generates</h3>
           {!stats.chartData || stats.chartData.length === 0 ? (
-            <div className="chart-empty">No daily data available.</div>
+            <EmptyState variant="inline" message="No daily data available." />
           ) : (
             <div className="bar-chart">
               {stats.chartData.map((bar, i) => {
@@ -157,16 +161,16 @@ export const AnalyticsPage: React.FC = () => {
         <div className="panel">
           <h3 className="panel-title">Recent Wallet Activity</h3>
           {!stats.recentActivity || stats.recentActivity.length === 0 ? (
-            <div className="table-empty">No wallet activity yet.</div>
+            <EmptyState variant="inline" message="No wallet activity yet." />
           ) : (
             <div className="table-container">
               <table>
                 <thead>
                   <tr>
-                    <th>User</th>
-                    <th>Type</th>
-                    <th>Amount</th>
-                    <th>Date</th>
+                    <th scope="col">User</th>
+                    <th scope="col">Type</th>
+                    <th scope="col">Amount</th>
+                    <th scope="col">Date</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -174,7 +178,7 @@ export const AnalyticsPage: React.FC = () => {
                     <tr key={a.id}>
                       <td>{a.userEmail}</td>
                       <td>
-                        <span className={badgeClassForType(a.type)}>{a.type}</span>
+                        <Badge tone={badgeToneForType(a.type)}>{a.type}</Badge>
                       </td>
                       <td>{a.amount > 0 ? `+${a.amount}` : a.amount}</td>
                       <td style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
@@ -187,7 +191,7 @@ export const AnalyticsPage: React.FC = () => {
             </div>
           )}
         </div>
-      </div>
+      </TwoColumnLayout>
     </div>
   );
 };

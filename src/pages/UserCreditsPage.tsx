@@ -91,7 +91,7 @@ export const UserCreditsPage: React.FC = () => {
           </div>
         </div>
 
-        {searchError && <div className="modal-error">{searchError}</div>}
+        {searchError && <div className="modal-error" role="alert">{searchError}</div>}
 
         {foundUser && (
           <div className="form-layout" style={{ marginTop: '20px' }}>
@@ -122,7 +122,7 @@ export const UserCreditsPage: React.FC = () => {
               />
             </div>
 
-            {actionError && <div className="modal-error">{actionError}</div>}
+            {actionError && <div className="modal-error" role="alert">{actionError}</div>}
             {successMessage && <div style={{ color: 'var(--success, green)', fontSize: '13px' }}>{successMessage}</div>}
 
             <button className="btn" onClick={handleRequestAdjustment} disabled={isSubmitting}>
@@ -145,7 +145,7 @@ export const UserCreditsPage: React.FC = () => {
           </p>
           <p style={{ color: 'var(--text-muted)', fontSize: '13px' }}>Reason: {reason}</p>
 
-          {actionError && <div className="modal-error">{actionError}</div>}
+          {actionError && <div className="modal-error" role="alert">{actionError}</div>}
 
           <div className="modal-actions">
             <button className="btn secondary" onClick={() => setShowConfirm(false)} disabled={isSubmitting}>

@@ -27,6 +27,21 @@ const TAB_MIN_ROLE: Record<TabKey, AdminRole> = {
   packs: 'superadmin',
 };
 
+/**
+ * Single source of truth for each tab's label/icon, shared by the nav pill
+ * and the page header so the two can never drift out of sync.
+ */
+const TAB_META: Record<TabKey, { label: string; icon: string }> = {
+  analytics: { label: 'Analytics', icon: 'fa-solid fa-chart-line' },
+  manager: { label: 'Style Manager', icon: 'fa-solid fa-sliders' },
+  credits: { label: 'Credits', icon: 'fa-solid fa-coins' },
+  packs: { label: 'Credit Packs', icon: 'fa-solid fa-box-open' },
+  country: { label: 'Users by Country', icon: 'fa-solid fa-earth-americas' },
+  generationAnalytics: { label: 'Generation Analytics', icon: 'fa-solid fa-star-half-stroke' },
+};
+
+const TAB_ORDER: TabKey[] = ['analytics', 'manager', 'credits', 'packs', 'country', 'generationAnalytics'];
+
 const AppContent: React.FC = () => {
   const { user, isLoading, logout } = useAuth();
   const [activeTab, setActiveTab] = useState<TabKey>('analytics');
@@ -57,55 +72,20 @@ const AppContent: React.FC = () => {
         </div>
 
         <div className="nav-actions-container">
-          <div className="tabs">
-            {can('analytics') && (
+          <div className="tabs" role="tablist" aria-label="Admin sections">
+            {TAB_ORDER.filter(can).map((tab) => (
               <button
-                className={`tab-btn ${activeTab === 'analytics' ? 'active' : ''}`}
-                onClick={() => setActiveTab('analytics')}
+                key={tab}
+                id={`tab-${tab}`}
+                role="tab"
+                aria-selected={activeTab === tab}
+                aria-controls={`tabpanel-${tab}`}
+                className={`tab-btn ${activeTab === tab ? 'active' : ''}`}
+                onClick={() => setActiveTab(tab)}
               >
-                <i className="fa-solid fa-chart-line"></i> Analytics
+                <i className={TAB_META[tab].icon}></i> {TAB_META[tab].label}
               </button>
-            )}
-            {can('manager') && (
-              <button
-                className={`tab-btn ${activeTab === 'manager' ? 'active' : ''}`}
-                onClick={() => setActiveTab('manager')}
-              >
-                <i className="fa-solid fa-sliders"></i> Style Manager
-              </button>
-            )}
-            {can('credits') && (
-              <button
-                className={`tab-btn ${activeTab === 'credits' ? 'active' : ''}`}
-                onClick={() => setActiveTab('credits')}
-              >
-                <i className="fa-solid fa-coins"></i> Credits
-              </button>
-            )}
-            {can('packs') && (
-              <button
-                className={`tab-btn ${activeTab === 'packs' ? 'active' : ''}`}
-                onClick={() => setActiveTab('packs')}
-              >
-                <i className="fa-solid fa-box-open"></i> Credit Packs
-              </button>
-            )}
-            {can('country') && (
-              <button
-                className={`tab-btn ${activeTab === 'country' ? 'active' : ''}`}
-                onClick={() => setActiveTab('country')}
-              >
-                <i className="fa-solid fa-earth-americas"></i> Users by Country
-              </button>
-            )}
-            {can('generationAnalytics') && (
-              <button
-                className={`tab-btn ${activeTab === 'generationAnalytics' ? 'active' : ''}`}
-                onClick={() => setActiveTab('generationAnalytics')}
-              >
-                <i className="fa-solid fa-star-half-stroke"></i> Generation Analytics
-              </button>
-            )}
+            ))}
           </div>
 
           <div className="user-profile-signout">
@@ -119,7 +99,12 @@ const AppContent: React.FC = () => {
         </div>
       </header>
 
-      <main className="main-content-layout">
+      <main
+        className="main-content-layout"
+        id={`tabpanel-${activeTab}`}
+        role="tabpanel"
+        aria-labelledby={`tab-${activeTab}`}
+      >
         {/* The panel is gated on the same check as its tab, not just on
             activeTab: the default tab is 'analytics', so a role that cannot
             even view analytics would otherwise still render that page and fire
@@ -130,6 +115,10 @@ const AppContent: React.FC = () => {
           </div>
         ) : (
           <>
+            <div className="page-header">
+              <i className={TAB_META[activeTab].icon}></i>
+              <h2>{TAB_META[activeTab].label}</h2>
+            </div>
             {activeTab === 'analytics' && <AnalyticsPage />}
             {activeTab === 'manager' && <StyleManagerPage />}
             {activeTab === 'credits' && <UserCreditsPage />}

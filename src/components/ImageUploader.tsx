@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { apiService } from '../services/api';
+import { IconButton } from './IconButton';
 
 const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // matches the backend's adminImageUpload limit
 
@@ -70,14 +71,12 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
           <div className="uploader-preview">
             <img src={value} alt="Preview" />
             {!disabled && (
-              <button
-                type="button"
-                className="uploader-remove-btn"
+              <IconButton
+                variant="uploader-remove-btn"
+                icon="fa-solid fa-trash-can"
+                label="Remove image"
                 onClick={handleRemove}
-                title="Remove image"
-              >
-                <i className="fa-solid fa-trash-can"></i>
-              </button>
+              />
             )}
           </div>
         ) : (

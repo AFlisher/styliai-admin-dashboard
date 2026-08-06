@@ -38,7 +38,7 @@ describe('UsersByCountryPage', () => {
 
     render(<UsersByCountryPage />);
 
-    expect(document.querySelector('.country-stats-grid .skeleton')).toBeTruthy();
+    expect(document.querySelector('.two-col-layout--3-2 .skeleton')).toBeTruthy();
 
     await screen.findByText('World Map');
     expect(screen.getByText('Distribution by Country')).toBeTruthy();
