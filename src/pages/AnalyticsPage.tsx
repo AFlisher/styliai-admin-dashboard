@@ -129,7 +129,7 @@ export const AnalyticsPage: React.FC = () => {
         <div className="stat-card">
           <div className="stat-header">
             <span className="stat-title">Storage Used</span>
-            <div className="stat-icon pink"><i className="fa-solid fa-database"></i></div>
+            <div className="stat-icon teal"><i className="fa-solid fa-database"></i></div>
           </div>
           <span className="stat-value">{stats.storageUsedMB.toLocaleString()} MB</span>
           <span className="stat-trend neutral">Style cover images bucket</span>

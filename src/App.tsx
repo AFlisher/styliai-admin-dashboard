@@ -59,8 +59,8 @@ const AppContent: React.FC = () => {
   }
 
   return (
-    <div className="container">
-      <header>
+    <div className="app-shell">
+      <aside className="sidebar">
         <div className="logo-container">
           <div className="logo-icon">
             <i className="fa-solid fa-wand-magic-sparkles"></i>
@@ -71,23 +71,24 @@ const AppContent: React.FC = () => {
           </div>
         </div>
 
-        <div className="nav-actions-container">
-          <div className="tabs" role="tablist" aria-label="Admin sections">
-            {TAB_ORDER.filter(can).map((tab) => (
-              <button
-                key={tab}
-                id={`tab-${tab}`}
-                role="tab"
-                aria-selected={activeTab === tab}
-                aria-controls={`tabpanel-${tab}`}
-                className={`tab-btn ${activeTab === tab ? 'active' : ''}`}
-                onClick={() => setActiveTab(tab)}
-              >
-                <i className={TAB_META[tab].icon}></i> {TAB_META[tab].label}
-              </button>
-            ))}
-          </div>
+        <nav className="sidebar-nav" role="tablist" aria-label="Admin sections" aria-orientation="vertical">
+          {TAB_ORDER.filter(can).map((tab) => (
+            <button
+              key={tab}
+              id={`tab-${tab}`}
+              role="tab"
+              aria-selected={activeTab === tab}
+              aria-controls={`tabpanel-${tab}`}
+              className={`sidebar-nav-item ${activeTab === tab ? 'active' : ''}`}
+              onClick={() => setActiveTab(tab)}
+            >
+              <i className={TAB_META[tab].icon}></i>
+              <span>{TAB_META[tab].label}</span>
+            </button>
+          ))}
+        </nav>
 
+        <div className="sidebar-footer">
           <div className="user-profile-signout">
             <span className="user-name-tag">
               <i className="fa-solid fa-user-shield"></i> {user.fullName || 'Admin'}
@@ -97,41 +98,45 @@ const AppContent: React.FC = () => {
             </button>
           </div>
         </div>
-      </header>
+      </aside>
 
-      <main
-        className="main-content-layout"
-        id={`tabpanel-${activeTab}`}
-        role="tabpanel"
-        aria-labelledby={`tab-${activeTab}`}
-      >
-        {/* The panel is gated on the same check as its tab, not just on
-            activeTab: the default tab is 'analytics', so a role that cannot
-            even view analytics would otherwise still render that page and fire
-            its requests, producing a screenful of 403s. */}
-        {!can(activeTab) ? (
-          <div className="panel">
-            <p>Your admin role does not have access to this section.</p>
-          </div>
-        ) : (
-          <>
-            <div className="page-header">
-              <i className={TAB_META[activeTab].icon}></i>
-              <h2>{TAB_META[activeTab].label}</h2>
-            </div>
-            {activeTab === 'analytics' && <AnalyticsPage />}
-            {activeTab === 'manager' && <StyleManagerPage />}
-            {activeTab === 'credits' && <UserCreditsPage />}
-            {activeTab === 'packs' && <CreditPacksPage />}
-            {activeTab === 'country' && <UsersByCountryPage />}
-            {activeTab === 'generationAnalytics' && <GenerationAnalyticsPage />}
-          </>
-        )}
-      </main>
+      <div className="content-area">
+        <div className="container">
+          <main
+            className="main-content-layout"
+            id={`tabpanel-${activeTab}`}
+            role="tabpanel"
+            aria-labelledby={`tab-${activeTab}`}
+          >
+            {/* The panel is gated on the same check as its tab, not just on
+                activeTab: the default tab is 'analytics', so a role that cannot
+                even view analytics would otherwise still render that page and fire
+                its requests, producing a screenful of 403s. */}
+            {!can(activeTab) ? (
+              <div className="panel">
+                <p>Your admin role does not have access to this section.</p>
+              </div>
+            ) : (
+              <>
+                <div className="page-header">
+                  <i className={TAB_META[activeTab].icon}></i>
+                  <h2>{TAB_META[activeTab].label}</h2>
+                </div>
+                {activeTab === 'analytics' && <AnalyticsPage />}
+                {activeTab === 'manager' && <StyleManagerPage />}
+                {activeTab === 'credits' && <UserCreditsPage />}
+                {activeTab === 'packs' && <CreditPacksPage />}
+                {activeTab === 'country' && <UsersByCountryPage />}
+                {activeTab === 'generationAnalytics' && <GenerationAnalyticsPage />}
+              </>
+            )}
+          </main>
 
-      <footer className="admin-footer">
-        <p>© {new Date().getFullYear()} StyliAI Admin Console. All rights reserved.</p>
-      </footer>
+          <footer className="admin-footer">
+            <p>© {new Date().getFullYear()} StyliAI Admin Console. All rights reserved.</p>
+          </footer>
+        </div>
+      </div>
     </div>
   );
 };

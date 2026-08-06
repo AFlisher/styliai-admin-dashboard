@@ -50,7 +50,9 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
       role={tone === 'error' ? 'alert' : 'status'}
     >
       {icon && (
-        <i className={[icon, 'empty-state-icon', tone === 'error' ? 'empty-state-icon--error' : ''].filter(Boolean).join(' ')}></i>
+        <div className={['empty-state-icon-chip', tone === 'error' ? 'empty-state-icon-chip--error' : ''].filter(Boolean).join(' ')}>
+          <i className={icon}></i>
+        </div>
       )}
       {title && <h3>{title}</h3>}
       <p>{message}</p>

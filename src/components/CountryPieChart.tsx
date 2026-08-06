@@ -6,8 +6,11 @@ const MAX_SLICES = 7;
 const RADIUS = 70;
 const STROKE_WIDTH = 28;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
-const SLICE_COLORS = ['#7c3aed', '#e735f6', '#3b82f6', '#f59e0b', '#22c55e', '#06b6d4', '#ef4444'];
-const OTHER_COLOR = '#71717a';
+// A curated family instead of a full rainbow: brand purple leads, then one
+// secondary accent (teal) and its neighbors, with amber as the one warm
+// note. No pink/red - those stay reserved for the brand mark and errors.
+const SLICE_COLORS = ['#7c3aed', '#2dd4bf', '#3b82f6', '#f59e0b', '#a78bfa', '#38bdf8', '#94a3b8'];
+const OTHER_COLOR = '#52525b';
 
 interface PieSlice {
   countryCode: string;

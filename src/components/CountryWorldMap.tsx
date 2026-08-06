@@ -11,8 +11,11 @@ import { CountryStat } from '../types';
 const GEO_URL = 'https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json';
 
 const NO_DATA_FILL = 'var(--bg-card-hover)';
-const LOW_COLOR: [number, number, number] = [90, 42, 168]; // muted accent-purple
-const HIGH_COLOR: [number, number, number] = [231, 53, 246]; // accent-pink
+// Single-hue intensity scale (dim violet -> bright violet) instead of a
+// purple-to-pink two-hue scale, so the map reads as "more of the brand
+// color" rather than a rainbow gradient.
+const LOW_COLOR: [number, number, number] = [55, 48, 74]; // dim, muted violet
+const HIGH_COLOR: [number, number, number] = [167, 139, 250]; // bright violet (#a78bfa)
 
 function lerpChannel(a: number, b: number, t: number): number {
   return Math.round(a + (b - a) * t);

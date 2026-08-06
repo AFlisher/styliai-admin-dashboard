@@ -161,7 +161,7 @@ export const GenerationAnalyticsPage: React.FC = () => {
           <div className="stat-card">
             <div className="stat-header">
               <span className="stat-title">Active Users Today</span>
-              <div className="stat-icon pink"><i className="fa-solid fa-user-check"></i></div>
+              <div className="stat-icon teal"><i className="fa-solid fa-user-check"></i></div>
             </div>
             <span className="stat-value">{overview.activeUsersToday.toLocaleString()}</span>
             <span className="stat-trend neutral">Users who generated today</span>
