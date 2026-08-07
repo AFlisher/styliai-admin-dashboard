@@ -1,4 +1,4 @@
-import { CategoryModel, StyleModel, StyleCreateInput, StyleField, TagModel, TagCreateInput, AdminStats, AuthResponse, AdminUserSearchResult, CreditPack, CreditPackInput, UsersByCountryStats, CountryStatsRange, GenerationOverviewStats, GenerationAnalyticsSummary, GenerationAnalyticsRange } from '../types';
+import { CategoryModel, StyleModel, StyleCreateInput, StyleField, TagModel, TagCreateInput, AdminStats, AuthResponse, AdminUserSearchResult, CreditPack, CreditPackInput, UsersByCountryStats, CountryStatsRange, GenerationOverviewStats, GenerationAnalyticsSummary, GenerationAnalyticsRange, UserListResponse, UserDetailResponse, StatusChangeResult, AbuseFindingsResponse, RiskUsersResponse, AbuseReviewOutcome, UserSession, AccountStatus } from '../types';
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
 
@@ -283,6 +283,73 @@ export const apiService = {
       method: 'POST',
       body: JSON.stringify({ amount, description }),
     });
+  },
+
+  // User Management & Moderation
+  async listUsers(params: {
+    q?: string;
+    status?: AccountStatus | 'all';
+    sort?: 'newest' | 'oldest' | 'risk';
+    limit?: number;
+    offset?: number;
+  }): Promise<UserListResponse> {
+    const search = new URLSearchParams();
+    if (params.q) search.set('q', params.q);
+    if (params.status && params.status !== 'all') search.set('status', params.status);
+    if (params.sort) search.set('sort', params.sort);
+    if (params.limit) search.set('limit', String(params.limit));
+    if (params.offset) search.set('offset', String(params.offset));
+    const qs = search.toString();
+    return apiCall<UserListResponse>(`/api/admin/users${qs ? `?${qs}` : ''}`);
+  },
+
+  async getUserDetail(userId: string): Promise<UserDetailResponse> {
+    return apiCall<UserDetailResponse>(`/api/admin/users/${userId}`);
+  },
+
+  async suspendUser(userId: string, status: 'suspended' | 'banned', reason?: string): Promise<StatusChangeResult> {
+    return apiCall<StatusChangeResult>(`/api/admin/users/${userId}/suspend`, {
+      method: 'POST',
+      body: JSON.stringify({ status, reason }),
+    });
+  },
+
+  async reinstateUser(userId: string): Promise<StatusChangeResult> {
+    return apiCall<StatusChangeResult>(`/api/admin/users/${userId}/reinstate`, {
+      method: 'POST',
+    });
+  },
+
+  async deleteUserAccount(userId: string, reason?: string): Promise<StatusChangeResult> {
+    return apiCall<StatusChangeResult>(`/api/admin/users/${userId}/delete`, {
+      method: 'POST',
+      body: JSON.stringify({ reason }),
+    });
+  },
+
+  // Abuse / moderation review queue
+  async listAbuseFindings(params: { userId?: string; includeReviewed?: boolean; limit?: number } = {}): Promise<AbuseFindingsResponse> {
+    const search = new URLSearchParams();
+    if (params.userId) search.set('userId', params.userId);
+    if (params.includeReviewed) search.set('includeReviewed', 'true');
+    if (params.limit) search.set('limit', String(params.limit));
+    const qs = search.toString();
+    return apiCall<AbuseFindingsResponse>(`/api/admin/abuse/findings${qs ? `?${qs}` : ''}`);
+  },
+
+  async reviewAbuseFinding(findingId: string, outcome: AbuseReviewOutcome): Promise<{ id: string; reviewOutcome: AbuseReviewOutcome }> {
+    return apiCall(`/api/admin/abuse/findings/${findingId}/review`, {
+      method: 'POST',
+      body: JSON.stringify({ outcome }),
+    });
+  },
+
+  async listRiskUsers(limit?: number): Promise<RiskUsersResponse> {
+    return apiCall<RiskUsersResponse>(`/api/admin/abuse/risk${limit ? `?limit=${limit}` : ''}`);
+  },
+
+  async listUserSessions(userId: string): Promise<{ sessions: UserSession[] }> {
+    return apiCall<{ sessions: UserSession[] }>(`/api/admin/abuse/users/${userId}/sessions`);
   },
 
   // Credit pack catalog

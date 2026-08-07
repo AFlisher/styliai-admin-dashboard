@@ -12,6 +12,7 @@ import App from '../App';
 // tear down the tree and make the tab assertions fail for unrelated reasons.
 vi.mock('../pages/AnalyticsPage', () => ({ default: () => <div>analytics page</div> }));
 vi.mock('../pages/StyleManagerPage', () => ({ default: () => <div>style manager page</div> }));
+vi.mock('../pages/UsersPage', () => ({ default: () => <div>users page</div> }));
 vi.mock('../pages/UserCreditsPage', () => ({ default: () => <div>credits page</div> }));
 vi.mock('../pages/CreditPacksPage', () => ({ default: () => <div>packs page</div> }));
 vi.mock('../pages/UsersByCountryPage', () => ({ default: () => <div>country page</div> }));
@@ -43,6 +44,7 @@ function signInAs(adminRole?: string) {
 const ALL_TABS = [
   /^analytics$/i,
   /style manager/i,
+  /^users$/i,
   /^credits$/i,
   /credit packs/i,
   /users by country/i,
@@ -74,13 +76,14 @@ describe('editor', () => {
     expect(screen.getByRole('tab', { name: /^analytics$/i })).toBeInTheDocument();
   });
 
-  it('does not see money or pricing tabs', async () => {
+  it('does not see money, pricing, or user-management tabs', async () => {
     signInAs('editor');
     render(<App />);
 
     await screen.findByRole('tab', { name: /style manager/i });
     expect(screen.queryByRole('tab', { name: /^credits$/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('tab', { name: /credit packs/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('tab', { name: /^users$/i })).not.toBeInTheDocument();
   });
 });
 
@@ -95,6 +98,7 @@ describe('viewer', () => {
     expect(screen.queryByRole('tab', { name: /style manager/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('tab', { name: /^credits$/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('tab', { name: /credit packs/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('tab', { name: /^users$/i })).not.toBeInTheDocument();
   });
 });
 

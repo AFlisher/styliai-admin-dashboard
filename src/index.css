@@ -611,6 +611,16 @@ tr:hover td {
   color: #60a5fa;
 }
 
+.badge.danger {
+  background: rgba(248, 113, 113, 0.15);
+  color: var(--error);
+}
+
+.badge.warning {
+  background: rgba(245, 158, 11, 0.15);
+  color: var(--warning);
+}
+
 /* Buttons */
 .btn {
   background: var(--color-interactive);
@@ -2242,4 +2252,366 @@ tr:hover td {
 .rating-summary-count {
   font-size: var(--font-size-13);
   color: var(--text-muted);
+}
+
+/* ===========================================================================
+   User Management & Moderation module
+   Reuses existing primitives throughout (.panel, .table-container, .badge,
+   .filter-controls-bar, .search-input, .filter-dropdown, .tabs/.tab-btn,
+   .btn, .hbar-track/.hbar-fill) - the rules below are only for the pieces
+   that had no equivalent yet: the slide-in drawer, the risk meter, the
+   pagination footer, and the abuse-finding/session list rows.
+   =========================================================================== */
+
+.users-table-row {
+  cursor: pointer;
+}
+
+.user-id-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.user-id-cell .user-email {
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-main);
+}
+
+.user-id-cell .user-name {
+  font-size: var(--font-size-12);
+  color: var(--text-muted);
+}
+
+.risk-cell {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  min-width: 96px;
+}
+
+.risk-meter-track {
+  width: 56px;
+  height: 6px;
+  border-radius: var(--radius-4);
+  background: var(--bg-card-hover);
+  overflow: hidden;
+  flex: none;
+}
+
+.risk-meter-fill {
+  height: 100%;
+  border-radius: var(--radius-4);
+  transition: width 0.4s ease;
+}
+
+.risk-meter-fill.low { background: var(--success); }
+.risk-meter-fill.medium { background: var(--warning); }
+.risk-meter-fill.high { background: var(--error); }
+
+.risk-score-value {
+  font-size: var(--font-size-12);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.pagination-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-16);
+  margin-top: var(--space-16);
+  padding-top: var(--space-16);
+  border-top: 1px solid var(--border-color);
+}
+
+.pagination-bar-summary {
+  font-size: var(--font-size-12);
+  color: var(--text-muted);
+}
+
+.pagination-bar-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+}
+
+/* Slide-in drawer. translateX uses percentages (not pixels) so it works
+   regardless of the drawer's actual width; the curve is Ionic's drawer easing
+   and the duration sits in the 200-500ms band this app already uses for
+   modals. Entrance-only, matching Modal's existing (instant) exit - adding an
+   animated exit here without one anywhere else in the app would read as
+   inconsistent rather than as extra polish. */
+.drawer-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 200;
+  opacity: 0;
+  transition: opacity 220ms ease;
+}
+
+.drawer-overlay[data-entered='true'] {
+  opacity: 1;
+}
+
+.drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(480px, 100vw);
+  background: var(--bg-elevated);
+  border-left: 1px solid var(--border-strong);
+  box-shadow: var(--shadow-lg);
+  z-index: 201;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 280ms cubic-bezier(0.32, 0.72, 0, 1);
+  outline: none;
+}
+
+.drawer[data-entered='true'] {
+  transform: translateX(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .drawer-overlay,
+  .drawer {
+    transition: opacity 200ms ease;
+  }
+  .drawer {
+    transform: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .drawer {
+    width: 100%;
+  }
+}
+
+.drawer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-20) var(--space-24);
+  border-bottom: 1px solid var(--border-color);
+  flex: none;
+}
+
+.drawer-header h3 {
+  font-size: var(--font-size-18);
+  font-weight: var(--font-weight-bold);
+}
+
+.drawer-content {
+  padding: var(--space-24);
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-24);
+}
+
+.drawer-section-title {
+  font-size: var(--font-size-12);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-wide);
+  color: var(--text-muted);
+  margin-bottom: var(--space-12);
+}
+
+.drawer-profile-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-14);
+}
+
+.drawer-profile-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-full);
+  background: var(--accent-purple-soft);
+  color: var(--accent-purple);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-18);
+  font-weight: var(--font-weight-bold);
+  flex: none;
+}
+
+.drawer-profile-name {
+  font-size: var(--font-size-16);
+  font-weight: var(--font-weight-bold);
+}
+
+.drawer-profile-email {
+  font-size: var(--font-size-13);
+  color: var(--text-muted);
+}
+
+.drawer-meta-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-14);
+}
+
+.drawer-meta-item label {
+  display: block;
+  font-size: var(--font-size-10);
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-wide);
+  color: var(--text-tertiary);
+  font-weight: var(--font-weight-bold);
+  margin-bottom: 2px;
+}
+
+.drawer-meta-item span {
+  font-size: var(--font-size-13);
+  color: var(--text-main);
+}
+
+.drawer-credits-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  background: var(--bg-dark);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-10);
+  padding: var(--space-14);
+}
+
+.drawer-credits-balance {
+  font-size: var(--font-size-24);
+  font-weight: var(--font-weight-extrabold);
+}
+
+.drawer-tx-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  margin-top: var(--space-12);
+}
+
+.drawer-tx-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: var(--font-size-12);
+  padding: var(--space-8) 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.drawer-tx-row:last-child {
+  border-bottom: none;
+}
+
+.drawer-tx-desc {
+  color: var(--text-muted);
+}
+
+.drawer-tx-amount.positive { color: var(--success); }
+.drawer-tx-amount.negative { color: var(--error); }
+
+.drawer-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-10);
+}
+
+.risk-factor-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  margin-top: var(--space-10);
+}
+
+.risk-factor-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--font-size-12);
+  color: var(--text-muted);
+}
+
+.risk-factor-row strong {
+  color: var(--text-main);
+}
+
+.risk-note {
+  font-size: var(--font-size-11);
+  color: var(--text-tertiary);
+  margin-top: var(--space-8);
+  line-height: 1.5;
+}
+
+.finding-card {
+  background: var(--bg-dark);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-10);
+  padding: var(--space-14);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+.finding-card + .finding-card {
+  margin-top: var(--space-10);
+}
+
+.finding-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.finding-detector {
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-13);
+}
+
+.finding-evidence {
+  font-size: var(--font-size-11);
+  color: var(--text-muted);
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  background: var(--bg-card);
+  border-radius: var(--radius-6);
+  padding: var(--space-8);
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.finding-meta {
+  font-size: var(--font-size-11);
+  color: var(--text-tertiary);
+}
+
+.finding-actions {
+  display: flex;
+  gap: var(--space-8);
+  flex-wrap: wrap;
+}
+
+.session-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: var(--font-size-12);
+  padding: var(--space-10) 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.session-row:last-child {
+  border-bottom: none;
+}
+
+.session-origin {
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  color: var(--text-muted);
+  font-size: var(--font-size-11);
 }

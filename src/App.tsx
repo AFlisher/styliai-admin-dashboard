@@ -7,10 +7,11 @@ import UserCreditsPage from './pages/UserCreditsPage';
 import CreditPacksPage from './pages/CreditPacksPage';
 import UsersByCountryPage from './pages/UsersByCountryPage';
 import GenerationAnalyticsPage from './pages/GenerationAnalyticsPage';
+import UsersPage from './pages/UsersPage';
 import { Loader } from './components/Loader';
 import { adminRoleOf, roleSatisfies, type AdminRole } from './utils/adminRoles';
 
-type TabKey = 'analytics' | 'manager' | 'credits' | 'packs' | 'country' | 'generationAnalytics';
+type TabKey = 'analytics' | 'manager' | 'users' | 'credits' | 'packs' | 'country' | 'generationAnalytics';
 
 /**
  * SEC-15.4: minimum role each tab needs, mirroring the server's route policy.
@@ -23,6 +24,10 @@ const TAB_MIN_ROLE: Record<TabKey, AdminRole> = {
   country: 'viewer',
   generationAnalytics: 'viewer',
   manager: 'editor',
+  // Same tier as GET /api/admin/users(/:id) in adminRoutePolicy.js - this tab
+  // reads user PII and can suspend/delete accounts, the same class of action
+  // as balance adjustment.
+  users: 'superadmin',
   credits: 'superadmin',
   packs: 'superadmin',
 };
@@ -34,13 +39,14 @@ const TAB_MIN_ROLE: Record<TabKey, AdminRole> = {
 const TAB_META: Record<TabKey, { label: string; icon: string }> = {
   analytics: { label: 'Analytics', icon: 'fa-solid fa-chart-line' },
   manager: { label: 'Style Manager', icon: 'fa-solid fa-sliders' },
+  users: { label: 'Users', icon: 'fa-solid fa-user-shield' },
   credits: { label: 'Credits', icon: 'fa-solid fa-coins' },
   packs: { label: 'Credit Packs', icon: 'fa-solid fa-box-open' },
   country: { label: 'Users by Country', icon: 'fa-solid fa-earth-americas' },
   generationAnalytics: { label: 'Generation Analytics', icon: 'fa-solid fa-star-half-stroke' },
 };
 
-const TAB_ORDER: TabKey[] = ['analytics', 'manager', 'credits', 'packs', 'country', 'generationAnalytics'];
+const TAB_ORDER: TabKey[] = ['analytics', 'manager', 'users', 'credits', 'packs', 'country', 'generationAnalytics'];
 
 const AppContent: React.FC = () => {
   const { user, isLoading, logout } = useAuth();
@@ -124,6 +130,7 @@ const AppContent: React.FC = () => {
                 </div>
                 {activeTab === 'analytics' && <AnalyticsPage />}
                 {activeTab === 'manager' && <StyleManagerPage />}
+                {activeTab === 'users' && <UsersPage />}
                 {activeTab === 'credits' && <UserCreditsPage />}
                 {activeTab === 'packs' && <CreditPacksPage />}
                 {activeTab === 'country' && <UsersByCountryPage />}

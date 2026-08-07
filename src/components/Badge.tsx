@@ -15,7 +15,9 @@ export type BadgeTone =
   | 'trending'
   | 'pro'
   | 'disabled'
-  | 'credits';
+  | 'credits'
+  | 'danger'
+  | 'warning';
 
 const TONE_CLASS_NAME: Record<BadgeTone, string> = {
   neutral: 'badge',
@@ -26,6 +28,8 @@ const TONE_CLASS_NAME: Record<BadgeTone, string> = {
   pro: 'preset-badge-pro',
   disabled: 'preset-badge-disabled',
   credits: 'credits-badge',
+  danger: 'badge danger',
+  warning: 'badge warning',
 };
 
 interface BadgeProps {

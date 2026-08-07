@@ -64,3 +64,116 @@ export type CreditPackInput =
 
 export type TagCreateInput =
   paths['/api/tags']['post']['requestBody']['content']['application/json'];
+
+// User Management & Moderation module. These endpoints (GET /api/admin/users,
+// GET /api/admin/users/:id, POST /api/admin/users/:id/delete, and the abuse
+// review surface) shipped without openapi.yaml entries - the same state
+// suspend/reinstate and every /api/admin/abuse/* route were already in - so
+// these are hand-written to mirror adminController.js / abuseController.js
+// rather than generated.
+export type AccountStatus = 'active' | 'suspended' | 'banned' | 'deleted';
+
+export interface UserListItem {
+  id: string;
+  email: string;
+  fullName: string | null;
+  status: AccountStatus;
+  createdAt: string;
+  countryCode: string | null;
+  balance: number;
+  riskScore: number | null;
+}
+
+export interface UserListResponse {
+  users: UserListItem[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface CreditTransaction {
+  id: string;
+  userId: string;
+  amount: number;
+  type: 'reward' | 'purchase' | 'generation' | 'refund' | 'admin';
+  description: string | null;
+  createdAt: string;
+}
+
+export interface UserDetail {
+  id: string;
+  email: string;
+  fullName: string | null;
+  status: AccountStatus;
+  statusReason: string | null;
+  statusChangedAt: string | null;
+  createdAt: string;
+  countryCode: string | null;
+  balance: number;
+  emailVerified: boolean;
+  riskScore: number | null;
+  riskFactors: Record<string, unknown> | null;
+  riskComputedAt: string | null;
+}
+
+export interface UserDetailResponse {
+  user: UserDetail;
+  credits: {
+    balance: number;
+    recentTransactions: CreditTransaction[];
+  };
+}
+
+export interface StatusChangeResult {
+  id: string;
+  email: string;
+  status: AccountStatus;
+  tokenVersion: number;
+}
+
+export type AbuseSeverity = 'low' | 'medium' | 'high';
+export type AbuseReviewOutcome = 'confirmed' | 'false_positive' | 'ignored';
+
+export interface AbuseFinding {
+  id: string;
+  userId: string | null;
+  detector: string;
+  severity: AbuseSeverity;
+  evidence: Record<string, unknown>;
+  originHash: string | null;
+  action: 'flagged' | 'suspended';
+  reviewedAt: string | null;
+  reviewOutcome: AbuseReviewOutcome | null;
+  windowStart: string;
+  windowEnd: string;
+  createdAt: string;
+}
+
+export interface AbuseFindingsResponse {
+  findings: AbuseFinding[];
+  autoSuspendEnabled: boolean;
+}
+
+export interface RiskUser {
+  userId: string;
+  score: number;
+  factors: Record<string, unknown>;
+  computedAt: string;
+  email: string;
+  status: AccountStatus;
+  accountCreatedAt: string;
+  countryCode: string | null;
+}
+
+export interface RiskUsersResponse {
+  users: RiskUser[];
+  note: string;
+}
+
+export interface UserSession {
+  familyId: string;
+  issuedAt: string;
+  usedAt: string | null;
+  originHash: string;
+  deviceLabel: string | null;
+}
