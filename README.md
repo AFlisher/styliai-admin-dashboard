@@ -36,16 +36,16 @@ Generates a production bundle in `dist/`, deployable to any static host.
 ### 6. Run the tests
 
 ```bash
-npx vitest run --dir src   # 9 files / 69 tests
+npm test   # 12 files / 108 tests
 ```
 
-> Use `--dir src`. Bare `npm test` is not scoped to `src`, so on a checkout with linked worktrees under `.claude/worktrees/` it also collects duplicated copies of these same tests and reports a larger, machine-dependent number. Everything passes either way; only the count is affected.
+> `vite.config.ts` scopes test discovery to this checkout's own `src/`, so the count is stable even on a checkout with linked worktrees under `.claude/worktrees/`.
 
 ---
 
 ## Features
 
-*Pages live in `src/pages/`. This list was resynchronized against the code on 2026-08-04.*
+*Pages live in `src/pages/`. This list was resynchronized against the code on 2026-08-07.*
 
 ### Analytics
 Platform stats (total users, active users today, images generated, credits used, storage used), a daily-generation chart, and a recent-transactions table, from `GET /api/admin/stats`.
@@ -63,6 +63,15 @@ Look a user up by email, then apply a manual credit adjustment with a required r
 
 ### Credit Packs
 Manage the purchasable credit-pack catalog.
+
+### Users
+User search and detail (profile, wallet, abuse findings and risk score, active sessions), with suspend / reinstate / delete actions and abuse-finding review, from `GET/POST /api/admin/users*` and `/api/admin/abuse/*`. Superadmin only.
+
+### Operations Center
+Three feeds — admin audit log, security events (auth/authz failures), and purchase/ad-reward verification history — plus a client-side merged timeline, from `GET /api/admin/audit-log`, `/security-events`, and `/purchases/verification-history`. Superadmin only.
+
+### System Health
+Backend/database/storage/email/image-provider/queue/scheduled-job status, an environment summary, migration and backup history, and a provider-incident feed, auto-refreshing every 30s, from `GET /api/admin/system-health(/incidents)`. Viewer tier.
 
 ### Style Manager
 - **Categories** — create, edit, delete, and drag-and-drop reorder.
