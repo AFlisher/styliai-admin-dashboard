@@ -8,10 +8,12 @@ import CreditPacksPage from './pages/CreditPacksPage';
 import UsersByCountryPage from './pages/UsersByCountryPage';
 import GenerationAnalyticsPage from './pages/GenerationAnalyticsPage';
 import UsersPage from './pages/UsersPage';
+import OperationsCenterPage from './pages/OperationsCenterPage';
+import SystemHealthPage from './pages/SystemHealthPage';
 import { Loader } from './components/Loader';
 import { adminRoleOf, roleSatisfies, type AdminRole } from './utils/adminRoles';
 
-type TabKey = 'analytics' | 'manager' | 'users' | 'credits' | 'packs' | 'country' | 'generationAnalytics';
+type TabKey = 'analytics' | 'manager' | 'users' | 'operations' | 'health' | 'credits' | 'packs' | 'country' | 'generationAnalytics';
 
 /**
  * SEC-15.4: minimum role each tab needs, mirroring the server's route policy.
@@ -28,6 +30,13 @@ const TAB_MIN_ROLE: Record<TabKey, AdminRole> = {
   // reads user PII and can suspend/delete accounts, the same class of action
   // as balance adjustment.
   users: 'superadmin',
+  // Same tier as GET /api/admin/audit-log|security-events|purchases/... - a
+  // broader exposure than the abuse-findings reads (raw IPs, admin emails,
+  // cross-account history), so it sits with the other PII/money-adjacent tabs.
+  operations: 'superadmin',
+  // Same tier as GET /api/admin/system-health(/incidents) - aggregate reads,
+  // no PII, no writes, no spend. Same bucket as stats/metrics.
+  health: 'viewer',
   credits: 'superadmin',
   packs: 'superadmin',
 };
@@ -40,13 +49,15 @@ const TAB_META: Record<TabKey, { label: string; icon: string }> = {
   analytics: { label: 'Analytics', icon: 'fa-solid fa-chart-line' },
   manager: { label: 'Style Manager', icon: 'fa-solid fa-sliders' },
   users: { label: 'Users', icon: 'fa-solid fa-user-shield' },
+  operations: { label: 'Operations Center', icon: 'fa-solid fa-list-check' },
+  health: { label: 'System Health', icon: 'fa-solid fa-heart-pulse' },
   credits: { label: 'Credits', icon: 'fa-solid fa-coins' },
   packs: { label: 'Credit Packs', icon: 'fa-solid fa-box-open' },
   country: { label: 'Users by Country', icon: 'fa-solid fa-earth-americas' },
   generationAnalytics: { label: 'Generation Analytics', icon: 'fa-solid fa-star-half-stroke' },
 };
 
-const TAB_ORDER: TabKey[] = ['analytics', 'manager', 'users', 'credits', 'packs', 'country', 'generationAnalytics'];
+const TAB_ORDER: TabKey[] = ['analytics', 'manager', 'users', 'operations', 'health', 'credits', 'packs', 'country', 'generationAnalytics'];
 
 const AppContent: React.FC = () => {
   const { user, isLoading, logout } = useAuth();
@@ -131,6 +142,8 @@ const AppContent: React.FC = () => {
                 {activeTab === 'analytics' && <AnalyticsPage />}
                 {activeTab === 'manager' && <StyleManagerPage />}
                 {activeTab === 'users' && <UsersPage />}
+                {activeTab === 'operations' && <OperationsCenterPage />}
+                {activeTab === 'health' && <SystemHealthPage />}
                 {activeTab === 'credits' && <UserCreditsPage />}
                 {activeTab === 'packs' && <CreditPacksPage />}
                 {activeTab === 'country' && <UsersByCountryPage />}

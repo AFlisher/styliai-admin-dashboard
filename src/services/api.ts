@@ -1,4 +1,4 @@
-import { CategoryModel, StyleModel, StyleCreateInput, StyleField, TagModel, TagCreateInput, AdminStats, AuthResponse, AdminUserSearchResult, CreditPack, CreditPackInput, UsersByCountryStats, CountryStatsRange, GenerationOverviewStats, GenerationAnalyticsSummary, GenerationAnalyticsRange, UserListResponse, UserDetailResponse, StatusChangeResult, AbuseFindingsResponse, RiskUsersResponse, AbuseReviewOutcome, UserSession, AccountStatus } from '../types';
+import { CategoryModel, StyleModel, StyleCreateInput, StyleField, TagModel, TagCreateInput, AdminStats, AuthResponse, AdminUserSearchResult, CreditPack, CreditPackInput, UsersByCountryStats, CountryStatsRange, GenerationOverviewStats, GenerationAnalyticsSummary, GenerationAnalyticsRange, UserListResponse, UserDetailResponse, StatusChangeResult, AbuseFindingsResponse, RiskUsersResponse, AbuseReviewOutcome, UserSession, AccountStatus, AuditLogResponse, SecurityEventsResponse, SecurityEventType, PurchaseVerificationResponse, PurchaseVerificationSource, SystemHealthResponse, SystemIncidentsResponse, SystemIncidentSource, SystemIncidentSeverity } from '../types';
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
 
@@ -350,6 +350,88 @@ export const apiService = {
 
   async listUserSessions(userId: string): Promise<{ sessions: UserSession[] }> {
     return apiCall<{ sessions: UserSession[] }>(`/api/admin/abuse/users/${userId}/sessions`);
+  },
+
+  // Operations Center
+  async listAuditLog(params: {
+    action?: string;
+    targetType?: string;
+    adminId?: string;
+    q?: string;
+    from?: string;
+    to?: string;
+    limit?: number;
+    offset?: number;
+  } = {}): Promise<AuditLogResponse> {
+    const search = new URLSearchParams();
+    if (params.action) search.set('action', params.action);
+    if (params.targetType) search.set('targetType', params.targetType);
+    if (params.adminId) search.set('adminId', params.adminId);
+    if (params.q) search.set('q', params.q);
+    if (params.from) search.set('from', params.from);
+    if (params.to) search.set('to', params.to);
+    if (params.limit) search.set('limit', String(params.limit));
+    if (params.offset) search.set('offset', String(params.offset));
+    const qs = search.toString();
+    return apiCall<AuditLogResponse>(`/api/admin/audit-log${qs ? `?${qs}` : ''}`);
+  },
+
+  async listSecurityEvents(params: {
+    eventType?: SecurityEventType | 'all';
+    q?: string;
+    from?: string;
+    to?: string;
+    limit?: number;
+    offset?: number;
+  } = {}): Promise<SecurityEventsResponse> {
+    const search = new URLSearchParams();
+    if (params.eventType && params.eventType !== 'all') search.set('eventType', params.eventType);
+    if (params.q) search.set('q', params.q);
+    if (params.from) search.set('from', params.from);
+    if (params.to) search.set('to', params.to);
+    if (params.limit) search.set('limit', String(params.limit));
+    if (params.offset) search.set('offset', String(params.offset));
+    const qs = search.toString();
+    return apiCall<SecurityEventsResponse>(`/api/admin/security-events${qs ? `?${qs}` : ''}`);
+  },
+
+  async listPurchaseVerifications(params: {
+    source?: PurchaseVerificationSource | 'all';
+    limit?: number;
+    offset?: number;
+  } = {}): Promise<PurchaseVerificationResponse> {
+    const search = new URLSearchParams();
+    if (params.source && params.source !== 'all') search.set('source', params.source);
+    if (params.limit) search.set('limit', String(params.limit));
+    if (params.offset) search.set('offset', String(params.offset));
+    const qs = search.toString();
+    return apiCall<PurchaseVerificationResponse>(`/api/admin/purchases/verification-history${qs ? `?${qs}` : ''}`);
+  },
+
+  // System Health
+  async getSystemHealth(): Promise<SystemHealthResponse> {
+    return apiCall<SystemHealthResponse>('/api/admin/system-health');
+  },
+
+  async listSystemIncidents(params: {
+    source?: SystemIncidentSource | 'all';
+    severity?: SystemIncidentSeverity | 'all';
+    q?: string;
+    from?: string;
+    to?: string;
+    limit?: number;
+    offset?: number;
+  } = {}): Promise<SystemIncidentsResponse> {
+    const search = new URLSearchParams();
+    if (params.source && params.source !== 'all') search.set('source', params.source);
+    if (params.severity && params.severity !== 'all') search.set('severity', params.severity);
+    if (params.q) search.set('q', params.q);
+    if (params.from) search.set('from', params.from);
+    if (params.to) search.set('to', params.to);
+    if (params.limit) search.set('limit', String(params.limit));
+    if (params.offset) search.set('offset', String(params.offset));
+    const qs = search.toString();
+    return apiCall<SystemIncidentsResponse>(`/api/admin/system-health/incidents${qs ? `?${qs}` : ''}`);
   },
 
   // Credit pack catalog

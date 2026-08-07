@@ -13,6 +13,8 @@ import App from '../App';
 vi.mock('../pages/AnalyticsPage', () => ({ default: () => <div>analytics page</div> }));
 vi.mock('../pages/StyleManagerPage', () => ({ default: () => <div>style manager page</div> }));
 vi.mock('../pages/UsersPage', () => ({ default: () => <div>users page</div> }));
+vi.mock('../pages/OperationsCenterPage', () => ({ default: () => <div>operations center page</div> }));
+vi.mock('../pages/SystemHealthPage', () => ({ default: () => <div>system health page</div> }));
 vi.mock('../pages/UserCreditsPage', () => ({ default: () => <div>credits page</div> }));
 vi.mock('../pages/CreditPacksPage', () => ({ default: () => <div>packs page</div> }));
 vi.mock('../pages/UsersByCountryPage', () => ({ default: () => <div>country page</div> }));
@@ -45,6 +47,8 @@ const ALL_TABS = [
   /^analytics$/i,
   /style manager/i,
   /^users$/i,
+  /operations center/i,
+  /system health/i,
   /^credits$/i,
   /credit packs/i,
   /users by country/i,
@@ -74,6 +78,8 @@ describe('editor', () => {
 
     expect(await screen.findByRole('tab', { name: /style manager/i })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: /^analytics$/i })).toBeInTheDocument();
+    // System Health is viewer-tier, so editor (which satisfies viewer) sees it too.
+    expect(screen.getByRole('tab', { name: /system health/i })).toBeInTheDocument();
   });
 
   it('does not see money, pricing, or user-management tabs', async () => {
@@ -84,6 +90,7 @@ describe('editor', () => {
     expect(screen.queryByRole('tab', { name: /^credits$/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('tab', { name: /credit packs/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('tab', { name: /^users$/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('tab', { name: /operations center/i })).not.toBeInTheDocument();
   });
 });
 
@@ -94,11 +101,14 @@ describe('viewer', () => {
 
     expect(await screen.findByRole('tab', { name: /^analytics$/i })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: /users by country/i })).toBeInTheDocument();
+    // System Health is viewer-tier, so viewer itself sees it too.
+    expect(screen.getByRole('tab', { name: /system health/i })).toBeInTheDocument();
 
     expect(screen.queryByRole('tab', { name: /style manager/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('tab', { name: /^credits$/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('tab', { name: /credit packs/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('tab', { name: /^users$/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('tab', { name: /operations center/i })).not.toBeInTheDocument();
   });
 });
 
