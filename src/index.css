@@ -118,6 +118,36 @@ body {
   min-height: 100vh;
 }
 
+/* Baseline theme for any text input/select/textarea that isn't wrapped in a
+   `.form-group` (e.g. FieldsEditor, PromptPreview) - without this they fall
+   through to the browser's default white-on-native chrome. Anything with its
+   own class (.search-input, .form-group input, .filter-dropdown select, ...)
+   already wins on specificity, so this is purely a fallback layer. */
+input:not([type='checkbox']):not([type='radio']),
+select,
+textarea {
+  background: var(--bg-dark);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-8);
+  padding: var(--space-8) var(--space-12);
+  color: var(--text-main);
+  font-size: var(--font-size-13);
+}
+
+input:not([type='checkbox']):not([type='radio']):focus,
+select:focus,
+textarea:focus {
+  border-color: var(--color-focus-ring);
+  outline: none;
+}
+
+input:disabled,
+select:disabled,
+textarea:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 /* App shell - a persistent left sidebar + scrolling content column, in place
    of the old horizontal tab bar. Same tabs, same click behavior, same
    role-gating; layout only. */
@@ -618,6 +648,17 @@ tr:hover td {
 
 .btn.secondary:hover:not(:disabled) {
   background: var(--bg-card-hover);
+}
+
+.btn.danger {
+  background: transparent;
+  border: 1px solid rgba(248, 113, 113, 0.4);
+  color: var(--error);
+}
+
+.btn.danger:hover:not(:disabled) {
+  background: rgba(248, 113, 113, 0.12);
+  border-color: var(--error);
 }
 
 .btn-small {
@@ -1198,6 +1239,16 @@ tr:hover td {
   width: 16px;
   height: 16px;
   accent-color: var(--color-interactive);
+}
+
+/* Standalone checkboxes outside a .checkbox-item wrapper (category/credit
+   pack "Enabled" toggles) - same treatment, targeted by class since these
+   sit directly in a .form-group .form-row instead. */
+.custom-checkbox {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--color-interactive);
+  cursor: pointer;
 }
 
 .checkbox-item label {
@@ -1938,9 +1989,43 @@ tr:hover td {
   }
 }
 
-/* Shared Today/7d/30d/All Time filter (Users by Country, Generation Analytics) */
+/* Shared Today/7d/30d/All Time filter (Users by Country, Generation Analytics).
+   Segmented control: dark pill track, active segment filled with the
+   interactive accent so the selected range reads clearly against the rest. */
+.tabs {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  background: var(--bg-dark);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-8);
+}
+
 .time-range-filter {
   padding: var(--space-4);
+}
+
+.tab-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: var(--font-size-13);
+  font-weight: var(--font-weight-semibold);
+  padding: var(--space-8) var(--space-14);
+  border-radius: var(--radius-6);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tab-btn:hover:not(.active) {
+  background: var(--bg-card-hover);
+  color: var(--text-main);
+}
+
+.tab-btn.active {
+  background: var(--color-interactive);
+  color: white;
+  box-shadow: var(--shadow-sm);
 }
 
 /* Users by Country analytics */
